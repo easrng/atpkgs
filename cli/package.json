@@ -1,0 +1,5 @@
+{
+	"name": "atpkgs",
+	"version": "0.0.0",
+	"description": "A decentralized package registry for JavaScript and TypeScript, built on @ATProtocol."
+}

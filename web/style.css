@@ -1,0 +1,321 @@
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/atkinson-hyperlegible-mono";
+
+* {
+	box-sizing: border-box;
+}
+:root {
+	color-scheme: dark light;
+	font-family: "Inter Variable", system-ui, sans-serif;
+	--font-header: "Atkinson Hyperlegible Mono Variable", system-ui, sans-serif;
+	--page-width: 40rem;
+	--surface: color-mix(in oklch, CanvasText 5%, Canvas);
+	--surface-border: color-mix(in oklch, CanvasText 50%, Canvas);
+	--focus-color: LinkText;
+	--focus-size: 2px;
+	--focus-size-current: 0;
+}
+body {
+	margin: 0;
+}
+body,
+html,
+#app {
+	width: 100%;
+	min-height: 100dvh;
+}
+h1 {
+	font-family: var(--font-header);
+}
+.logo {
+	fill: currentColor;
+}
+input[type="search"],
+input[type="text"] {
+	font: inherit;
+	border: 1px solid;
+	background: Canvas;
+	color: CanvasText;
+	border-radius: 4px;
+	padding: 0.25em 0.5em;
+}
+button:not(.not-button) {
+	--btn-border-color: CanvasText;
+	--_btn-border-color: var(--btn-border-color);
+	font: inherit;
+	border: 1px solid var(--_btn-border-color);
+	background: light-dark(#666, #444);
+	color: #fff;
+	border-radius: 4px;
+	padding: calc(0.25em - 1px) 0.5em;
+	box-shadow:
+		0 2px var(--_btn-border-color),
+		0 0 0 var(--focus-size-current) var(--focus-color),
+		0 2px 0 var(--focus-size-current) var(--focus-color);
+	transform: translateY(-1px);
+	cursor: pointer;
+	padding-top: 2px;
+	padding-bottom: 4px;
+	&:is(:active, [data-headlessui-state~="active"]) {
+		transform: translateY(1px);
+		box-shadow:
+			0 0 var(--_btn-border-color),
+			0 0 0 var(--focus-size-current) var(--focus-color);
+	}
+	.lucide {
+		width: 1em;
+		height: 1em;
+		vertical-align: bottom;
+		transform: translateY(-1px);
+	}
+	.lucide-wrap,
+	.lucide:not(.lucide-wrap .lucide) {
+		display: inline-block;
+	}
+}
+.page:not(.page-home) {
+	min-height: 100svh;
+	display: flex;
+	flex-direction: column;
+	main {
+		max-width: var(--page-width);
+		margin: 0 auto;
+		width: 100%;
+		padding: 1rem;
+	}
+	header {
+		border-bottom: 1px solid var(--surface-border);
+		background: var(--surface);
+		.header-inner {
+			display: flex;
+			align-items: center;
+			padding: 1rem;
+			align-items: center;
+			margin: 0 auto;
+			max-width: var(--page-width);
+		}
+		.search-form {
+			display: flex;
+			flex-grow: 1;
+			align-items: center;
+			grid-gap: 0.5ch;
+			width: 0;
+			margin-right: 1ch;
+			input[type="search"] {
+				flex-grow: 1;
+				width: 0;
+			}
+		}
+		h1 {
+			font-size: 2rem;
+			font-weight: 400;
+			margin: 0;
+			margin-right: 1rem;
+
+			a {
+				color: inherit;
+				text-decoration: none;
+			}
+
+			.logo {
+				width: 1.5em;
+				height: 1.5em;
+				vertical-align: middle;
+				margin-right: 0.5ch;
+			}
+		}
+	}
+	h2 {
+		font-family: var(--font-header);
+		font-size: 1.5rem;
+		font-weight: 500;
+		margin: 0;
+	}
+}
+.page.page-loading-splash {
+	position: fixed;
+	inset: 0;
+	background: Canvas;
+	z-index: 100;
+
+	&:not(.ssr) {
+		user-select: none;
+		> * {
+			pointer-events: none;
+		}
+	}
+	main {
+		display: flex;
+		flex-grow: 1;
+		align-items: center;
+		justify-content: center;
+		flex-direction: column;
+		text-align: center;
+		.logo {
+			width: 8rem;
+			opacity: 0.5;
+		}
+		h2 {
+			font-weight: 400;
+			padding-block: 1.5rem;
+			max-width: 25rem;
+		}
+	}
+}
+.page-loading {
+	position: fixed;
+	z-index: 101;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	opacity: 1;
+	background: color-mix(in oklch, CanvasText 30%, Canvas);
+	transform-origin: top;
+	transform: scaleY(1);
+	opacity: 1;
+	transition:
+		1.5s transform ease-out,
+		0.3s 0.25s opacity ease-out;
+}
+.page-loading.loaded {
+	transform: scaleY(0);
+	opacity: 0;
+	&:after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: color-mix(in oklch, CanvasText 85%, Canvas);
+		transform: translateX(0%);
+		animation: page-loading-gaslighting 0.4s ease-out;
+	}
+}
+.page-loading-gaslighting {
+	width: 100%;
+	height: 100%;
+	background: color-mix(in oklch, CanvasText 85%, Canvas);
+	transform: translateX(-100%);
+	animation: page-loading-gaslighting 60s cubic-bezier(0, 1, 0.22, 1);
+}
+@keyframes page-loading-gaslighting {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(0%);
+	}
+}
+.spin {
+	animation: spin 1s linear infinite;
+}
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+.popover {
+	padding: 0.25rem;
+	& > * {
+		padding: 0.25rem;
+		border: 1px solid var(--surface-border);
+		border-radius: 0.5rem;
+		background: var(--surface);
+	}
+}
+.handle-input {
+	width: 18rem;
+	form {
+		position: relative;
+		display: flex;
+		gap: 0.25rem;
+
+		& > .lucide {
+			position: absolute;
+			width: 1em;
+			height: 1em;
+			font-size: 1.125rem;
+			margin: 0.35rem;
+			pointer-events: none;
+		}
+		input {
+			padding-left: 1.5rem;
+			width: 0;
+			flex-grow: 1;
+		}
+	}
+}
+.menu {
+	background: var(--surface);
+	border: 1px solid var(--surface-border);
+	border-radius: 0.25rem;
+	--anchor-padding: 0.25rem;
+	margin-top: 0.25rem;
+	outline: none;
+	min-width: 10rem;
+}
+.menu-item {
+	display: block;
+	padding: 0.25rem 0.5rem;
+	color: CanvasText;
+	text-decoration: none;
+	font: inherit;
+	border: none;
+	background: transparent;
+	width: 100%;
+	text-align: inherit;
+	&:is(button) {
+		cursor: pointer;
+	}
+	&:not(:last-child) {
+		border-bottom: 1px solid var(--surface-border);
+	}
+	&:is([data-focus], [data-active]) {
+		background-color: CanvasText;
+		color: Canvas;
+	}
+}
+.menu-item-account-caption {
+	font-size: 0.75em;
+	opacity: 0.75;
+}
+.menu-item-account-handle {
+	margin-bottom: 0.1rem;
+}
+
+.menu-item-destructive {
+	color: color-mix(in oklch, red 70%, CanvasText);
+	&:is([data-focus], [data-active]) {
+		color: #fff;
+		background: color-mix(in oklch, #9d0000 80%, CanvasText);
+	}
+}
+
+html:not([data-headlessui-focus-visible])
+	:focus:not([contentEditable="true"], input, textarea) {
+	--focus-size-current: 0;
+}
+
+[contentEditable="true"],
+[tabindex],
+a[href],
+area[href],
+button,
+iframe,
+input,
+select,
+details > summary,
+textarea {
+	box-shadow: 0 0 0 var(--focus-size-current) var(--focus-color);
+	outline: none;
+}
+
+:focus {
+	--focus-size-current: var(--focus-size);
+
+	& > * {
+		--focus-size-current: 0;
+	}
+}

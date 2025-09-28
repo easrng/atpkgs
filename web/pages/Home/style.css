@@ -1,0 +1,57 @@
+.page-home {
+	header {
+		text-align: center;
+		padding: 3rem 0;
+		max-width: var(--page-width);
+		margin: 0 auto;
+		h1 {
+			font-size: 3rem;
+			font-weight: 400;
+			margin: 0;
+			margin-bottom: 0.5em;
+
+			.logo {
+				width: 1.5em;
+				height: 1.5em;
+				vertical-align: middle;
+				margin-right: 0.5ch;
+			}
+		}
+		h2 {
+			font-weight: 400;
+			margin: 0;
+			text-wrap: balance;
+			margin-bottom: 2rem;
+
+			b {
+				font-weight: 550;
+			}
+		}
+	}
+
+	.atproto-logo {
+		color: color-mix(in oklch, CanvasText 85%, Canvas);
+		&:not(:hover) {
+			text-decoration: none;
+		}
+		.atproto-logo-at-symbol {
+			color: LinkText;
+			.lucide {
+				width: 1em;
+				height: 1em;
+				vertical-align: bottom;
+				transform: translateY(-0.15em);
+			}
+		}
+		.atproto-logo-at-text {
+			color: LinkText;
+		}
+	}
+	.search-form {
+		margin-bottom: 1rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5ch;
+	}
+}

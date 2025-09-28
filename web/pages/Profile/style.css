@@ -1,0 +1,25 @@
+.user-info .avatar {
+	width: 4rem;
+	height: 4rem;
+	border-radius: 50%;
+	object-fit: cover;
+	object-position: center;
+	flex-shrink: 0;
+	background-color: #888;
+}
+.user-info {
+	display: flex;
+	gap: 1rem;
+	margin-block: 1rem;
+}
+.user-info-text {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	.lucide {
+		width: 1em;
+		height: 1em;
+		vertical-align: middle;
+	}
+}

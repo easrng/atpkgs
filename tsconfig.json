@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"target": "ES2020",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"noEmit": true,
+		"allowJs": true,
+		"checkJs": true,
+		"lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
+		"types": [],
+		"erasableSyntaxOnly": true,
+		"verbatimModuleSyntax": true,
+		"noUncheckedIndexedAccess": true,
+
+		/* Preact Config */
+		"jsx": "react-jsx",
+		"jsxImportSource": "preact",
+		"skipLibCheck": true,
+		"paths": {
+			"react": ["./node_modules/preact/compat/"],
+			"react-dom": ["./node_modules/preact/compat/"]
+		},
+		"allowImportingTsExtensions": true,
+		"strict": true
+	},
+	"include": ["node_modules/vite/client.d.ts", "**/*"]
+}
