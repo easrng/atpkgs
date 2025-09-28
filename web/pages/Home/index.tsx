@@ -8,26 +8,34 @@ import { errorWrap } from "../../load";
 
 export const Home = errorWrap(() => {
 	return (
-		<div class="page page-home">
+		<main class="page page-home">
 			<Title>{""}</Title>
 			<header>
 				<h1>
 					<Logo />
 					atpkgs
 				</h1>
-				<h2>
+				{/* p tag for semantic subtitle */}
+				<p class="subtitle">
 					A decentralized package registry for JavaScript and TypeScript, built
 					on{" "}
 					<a href="https://atproto.com/" class="atproto-logo">
+					
+						
 						<span class="atproto-logo-at-symbol">
 							<AtSign />
 						</span>
+					
 						<span class="atproto-logo-at-text">AT</span>Protocol
 					</a>.
-				</h2>
+				</p>
+			</header>
+			<hr />
+			<nav>
 				<Search />
 				<AccountButton big={true} />
-			</header>
-		</div>
+
+			</nav>
+		</main>
 	);
 });

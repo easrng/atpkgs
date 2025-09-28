@@ -1,28 +1,75 @@
+#app:has(.page-home) {
+	display: flex;
+	place-items: center;
+}
 .page-home {
+		--gap:2rem;
+		--margin-col-calc: 10%;
+		--content-col-size: 270px ;
+
+		/* calcs to get it to scale at larger screen sizes - kindergartenr */
+		--content-col-max-size: max(calc(90% - var(--content-col-size) ), var(--content-col-size));
+		--content-col-func: minmax(
+			min(var(--content-col-max-size), 100%), 1fr);
+		
+		/* grid used to give strict alignment */
+		display: grid;
+		grid-auto-flow: column;
+		grid-template-columns: minmax(10%, 1fr) 
+		var(--content-col-func) 
+		minmax(10%, 1fr);
+		gap: var(--gap);
+		column-gap: max(3rem, var(--gap));
+		justify-content: center;
+		
+		& > * {
+			grid-column: 2;
+			
+		}
+		@media ( width > 600px ) {
+			
+			grid-template-columns: var(--margin-col-calc) 
+			var(--content-col-func)
+			var(--content-col-func)
+			var(--margin-col-calc);
+			
+			& > * {
+				grid-column: span 2 / 4;
+			
+			}
+
+		}
 	header {
-		text-align: center;
-		padding: 3rem 0;
-		max-width: var(--page-width);
+		display: grid;
+		grid-template-columns: subgrid;
+		justify-items: left;
 		margin: 0 auto;
+		line-height: 1.5;
+		
 		h1 {
 			font-size: 3rem;
 			font-weight: 400;
 			margin: 0;
-			margin-bottom: 0.5em;
-
+			
+			
 			.logo {
+
 				width: 1.5em;
 				height: 1.5em;
-				vertical-align: middle;
+				vertical-align: -1.2rem;
 				margin-right: 0.5ch;
 			}
 		}
-		h2 {
+		/* subheading v */
+		& > p {
+			/* text alignment with h1 */
+			font-size: 0.85rem;
+			margin: 1.4rem 0 0 0;
 			font-weight: 400;
-			margin: 0;
-			text-wrap: balance;
-			margin-bottom: 2rem;
-
+		
+			display: inline;
+			text-align: right;
+			
 			b {
 				font-weight: 550;
 			}
@@ -30,7 +77,8 @@
 	}
 
 	.atproto-logo {
-		color: color-mix(in oklch, CanvasText 85%, Canvas);
+		color: color-mix(in oklch, LinkText 85%, Canvas);
+		white-space: nowrap;
 		&:not(:hover) {
 			text-decoration: none;
 		}
@@ -47,11 +95,58 @@
 			color: LinkText;
 		}
 	}
+	nav {
+		display: grid;
+		grid-template-columns: subgrid;
+		font-size: .85rem;
+		> * {
+			grid-column: 2;
+		}
+	}
 	.search-form {
+		margin: 0px;
 		margin-bottom: 1rem;
-		display: flex;
-		align-items: center;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		align-items: baseline;
+		align-content: baseline;
 		justify-content: center;
 		gap: 0.5ch;
+		grid-column: 3;
+
+		
 	}
+	button {
+		width: 100%;
+		background: light-dark(#666, color-mix(in oklch, var(--secondary-colour) 100%, Canvas));
+	}
+	/* have the search button flex on small screens */
+	@media ( width < 600px ) {
+		nav {
+			
+			.search-form {
+				grid-column: unset;
+				
+			}
+			button[title="Search"] {
+				height: calc(100% - var(--focus-size));		
+			}
+			button:not([title="Search"]) {
+				text-align: left;
+			}
+		}
+	}
+	button[title="Search"] {
+		translate: 0px 1px;
+		padding: 0.25em 0.5em;
+		
+		
+	}
+	button:not([title="Search"]) {
+				text-align: left;
+				& .lucide {
+					transform:translateY(-2px)
+				}
+			}
+	
 }

@@ -5,15 +5,20 @@
 	box-sizing: border-box;
 }
 :root {
-	color-scheme: dark light;
+	/* for now, working only on dark theme - kindergartnr */
+	color-scheme: dark;
 	font-family: "Inter Variable", system-ui, sans-serif;
 	--font-header: "Atkinson Hyperlegible Mono Variable", system-ui, sans-serif;
+	--font-size: clamp(16px, .9vw, 25px); 
 	--page-width: 40rem;
 	--surface: color-mix(in oklch, CanvasText 5%, Canvas);
 	--surface-border: color-mix(in oklch, CanvasText 50%, Canvas);
 	--focus-color: LinkText;
 	--focus-size: 2px;
 	--focus-size-current: 0;
+	/* spelled with a u */
+	--primary-colour: hsl(52.9, 34.7%, 9.6%);
+	--secondary-colour: hsl(351.1, 35.3%, 26.1%);
 }
 body {
 	margin: 0;
@@ -21,8 +26,10 @@ body {
 body,
 html,
 #app {
+	font-size: var(--font-size);
 	width: 100%;
 	min-height: 100dvh;
+	background: var(--primary-colour);
 }
 h1 {
 	font-family: var(--font-header);
@@ -34,7 +41,7 @@ input[type="search"],
 input[type="text"] {
 	font: inherit;
 	border: 1px solid;
-	background: Canvas;
+	background: color-mix(in oklch, var(--primary-colour) 20%, Canvas 40%);
 	color: CanvasText;
 	border-radius: 4px;
 	padding: 0.25em 0.5em;
@@ -44,14 +51,14 @@ button:not(.not-button) {
 	--_btn-border-color: var(--btn-border-color);
 	font: inherit;
 	border: 1px solid var(--_btn-border-color);
-	background: light-dark(#666, #444);
+	background: light-dark(#666, color-mix(in oklch, var(--secondary-colour), Canvas));
 	color: #fff;
 	border-radius: 4px;
 	padding: calc(0.25em - 1px) 0.5em;
 	box-shadow:
-		0 2px var(--_btn-border-color),
+		0 var(--focus-size) var(--_btn-border-color),
 		0 0 0 var(--focus-size-current) var(--focus-color),
-		0 2px 0 var(--focus-size-current) var(--focus-color);
+		0 var(--focus-size) 0 var(--focus-size-current) var(--focus-color);
 	transform: translateY(-1px);
 	cursor: pointer;
 	padding-top: 2px;
@@ -73,19 +80,27 @@ button:not(.not-button) {
 		display: inline-block;
 	}
 }
+main {
+	width: var(--page-width);
+	max-width: 100%;
+	margin: 0 auto;
+	padding: 1rem;
+}
+hr {
+	width: 100%;
+	border: none;
+	height: .1rem;
+	background: radial-gradient(var(--secondary-colour) 0, transparent 90%) ;
+	
+}
+
 .page:not(.page-home) {
 	min-height: 100svh;
 	display: flex;
 	flex-direction: column;
-	main {
-		max-width: var(--page-width);
-		margin: 0 auto;
-		width: 100%;
-		padding: 1rem;
-	}
 	header {
 		border-bottom: 1px solid var(--surface-border);
-		background: var(--surface);
+		background: var(--secondary-colour);
 		.header-inner {
 			display: flex;
 			align-items: center;
