@@ -26,7 +26,7 @@ export const Home = errorWrap(() => {
               </span>
 
               <span class="atproto-logo-at-text">AT</span>Protocol
-            </a>.
+            </a>. (Alpha!)
           </p>
         </div>
         <nav>
