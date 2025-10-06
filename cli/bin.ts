@@ -395,14 +395,22 @@ async function publish() {
           "publish#tarball=" +
           encodeURIComponent(`http://localhost:${port}/tarball?token=${token}`);
         process.stderr.write("- opening browser...\n");
-        await run(
-          process.platform === "win32"
-            ? "explorer"
-            : process.platform === "darwin"
-            ? "open"
-            : "xdg-open",
-          [url],
-        );
+        try {
+					await run(
+          	process.platform === "win32"
+            	? "explorer"
+          	  : process.platform === "darwin"
+        	    ? "open"
+      	      : "xdg-open",
+    	      [url],
+  	      );
+				} catch(e) {
+					process.stderr.write(
+						(process.stderr.isTTY ? "\r\x1b[K" : "") +
+							styleText("red", "✖") +
+							" Error opening link. Please open " + url + " manually.\n"
+					);
+				}
         const spinner = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
         const spin = () => {
           const current = spinner.shift() ?? "";

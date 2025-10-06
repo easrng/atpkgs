@@ -1,0 +1,16 @@
+{
+  "client_id": "https://atpkgs.easrng.net/oauth-client-metadata.json",
+  "client_name": "atpkgs",
+  "client_uri": "https://atpkgs.easrng.net",
+  "logo_uri": "https://atpkgs.easrng.net/logo_social.png",
+  "redirect_uris": [
+    "https://atpkgs.easrng.net/oauth/callback",
+    "http://127.0.0.1:5173/oauth/callback"
+  ],
+  "scope": "atproto transition:generic",
+  "grant_types": ["authorization_code", "refresh_token"],
+  "response_types": ["code"],
+  "token_endpoint_auth_method": "none",
+  "application_type": "native",
+  "dpop_bound_access_tokens": true
+}

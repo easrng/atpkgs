@@ -12,5 +12,7 @@
   "files": [
     "dist/bin.js"
   ],
-  "bin": "dist/bin.js"
+  "bin": {
+		"atpkgs": "dist/bin.js"
+	}
 }

@@ -82,14 +82,9 @@ function LogIn() {
             type="submit"
             title={submitting ? "Logging In" : "Log In"}
             aria-disabled={submitting}
+						class={submitting ? "button-loading" : ""}
           >
-            {submitting
-              ? (
-                <span class="lucide-wrap">
-                  <LoaderCircleIcon class={"spin"} />
-                </span>
-              )
-              : <ArrowRight />}
+            <ArrowRight />
           </button>
         </form>
       </PopoverPanel>

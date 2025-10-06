@@ -270,11 +270,11 @@ main {
       width: 1em;
       height: 1em;
       font-size: 1.125rem;
-      margin: 0.35rem;
+      margin: 0.5rem;
       pointer-events: none;
     }
     input {
-      padding-left: 1.5rem;
+      padding-left: 1.75rem;
       width: 0;
       flex-grow: 1;
     }
