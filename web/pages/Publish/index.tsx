@@ -627,7 +627,7 @@ function PublishForm(
                           record: ({
                             $type: "org.purl.atpkgs.node.package",
                             name,
-                            tags: parse(partialRecord.version).prerelease
+                            tags: parse(partialRecord.version).prerelease?.length
                               ? packument.tags
                               : [
                                 {
