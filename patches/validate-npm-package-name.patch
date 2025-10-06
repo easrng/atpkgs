@@ -1,0 +1,22 @@
+diff --git a/lib/index.js b/lib/index.js
+index db6e86b0dfc60a38a8dd1194a6078a3eaa48df6b..506b6a4edcb723700d184d5fd083dd03f1075200 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -1,5 +1,4 @@
+ 'use strict'
+-const { builtinModules: builtins } = require('module')
+ 
+ var scopedPackagePattern = new RegExp('^(?:@([^/]+?)[/])?([^/]+?)$')
+ var exclusionList = [
+@@ -51,11 +50,6 @@ function validate (name) {
+ 
+   // Generate warnings for stuff that used to be allowed
+ 
+-  // core module names like http, events, util, etc
+-  if (builtins.includes(name.toLowerCase())) {
+-    warnings.push(name + ' is a core module name')
+-  }
+-
+   if (name.length > 214) {
+     warnings.push('name can no longer contain more than 214 characters')
+   }

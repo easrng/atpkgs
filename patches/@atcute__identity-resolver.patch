@@ -1,0 +1,16 @@
+diff --git a/dist/handle/methods/well-known.js b/dist/handle/methods/well-known.js
+index 9c95b56ed77270afa0759c2aa2038680ec9d196f..6a6c049be6296da945d479c91ff512d9e129d2a3 100644
+--- a/dist/handle/methods/well-known.js
++++ b/dist/handle/methods/well-known.js
+@@ -14,11 +14,7 @@ export class WellKnownHandleResolver {
+             const response = await (0, this.#fetch)(url, {
+                 signal: options?.signal,
+                 cache: options?.noCache ? 'no-cache' : undefined,
+-                redirect: 'manual',
+             });
+-            if (response.status >= 300 && response.status < 400) {
+-                throw new TypeError(`unexpected redirect`);
+-            }
+             const handled = await fetchWellKnownHandler(response);
+             text = handled.text;
+         }

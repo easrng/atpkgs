@@ -3,150 +3,98 @@
 	place-items: center;
 }
 .page-home {
-		--gap:2rem;
-		--margin-col-calc: 10%;
-		--content-col-size: 270px ;
+  width: 48em;
+  padding-block: 20vmin;
 
-		/* calcs to get it to scale at larger screen sizes - kindergartenr */
-		--content-col-max-size: max(calc(90% - var(--content-col-size) ), var(--content-col-size));
-		--content-col-func: minmax(
-			min(var(--content-col-max-size), 100%), 1fr);
-		
-		/* grid used to give strict alignment */
-		display: grid;
-		grid-auto-flow: column;
-		grid-template-columns: minmax(10%, 1fr) 
-		var(--content-col-func) 
-		minmax(10%, 1fr);
-		gap: var(--gap);
-		column-gap: max(3rem, var(--gap));
-		justify-content: center;
-		
-		& > * {
-			grid-column: 2;
-			
-		}
-		@media ( width > 600px ) {
-			
-			grid-template-columns: var(--margin-col-calc) 
-			var(--content-col-func)
-			var(--content-col-func)
-			var(--margin-col-calc);
-			
-			& > * {
-				grid-column: span 2 / 4;
-			
-			}
+  header {
+    gap: 1rem;
+    column-gap: 1.5rem;
+    justify-content: center;
+    display: grid;
+    overflow: hidden;
+    grid-template-columns: 3fr 2fr;
+    grid-template-areas:
+      "logo login "
+      "text search";
+    padding-bottom: 2rem;
+    .home-header-inner {
+      display: contents;
+      h1 {
+        font-size: 3rem;
+        font-weight: 400;
+        margin: 0;
+        grid-area: logo;
 
-		}
-	header {
-		display: grid;
-		grid-template-columns: subgrid;
-		justify-items: left;
-		margin: 0 auto;
-		line-height: 1.5;
-		
-		h1 {
-			font-size: 3rem;
-			font-weight: 400;
-			margin: 0;
-			
-			
-			.logo {
+        .logo {
+          width: 1.5em;
+          height: 1.5em;
+          vertical-align: -0.5em;
+          margin-right: 1rem;
+        }
+      }
+      /* subheading v */
+      & > p {
+        /* text alignment with h1 */
+        font-size: 1.25rem;
+        margin: 0;
+        font-weight: 400;
+        text-align: left;
+        grid-area: text;
+        margin-top: -0.15rem;
+      }
+    }
+    .atproto-logo {
+      color: color-mix(
+        in oklch,
+        var(--colour-fg) 50%,
+        var(--md-sys-color-outline)
+      );
+      white-space: nowrap;
+      &:not(:hover) {
+        text-decoration: none;
+      }
+      .atproto-logo-at-symbol {
+        color: var(--colour-link);
+        .lucide {
+          width: 1em;
+          height: 1em;
+          vertical-align: -0.15em;
+        }
+      }
+      .atproto-logo-at-text {
+        color: var(--colour-link);
+      }
+    }
+    nav {
+      display: contents;
+    }
+    .search-form {
+      margin: 0px;
+      display: flex;
+      align-items: center;
+      gap: 0.5ch;
+      min-width: 15rem;
+      grid-area: search;
+      width: 100%;
+      align-self: start;
+    }
+    .buttons {
+      grid-area: login;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      justify-content: end;
+    }
 
-				width: 1.5em;
-				height: 1.5em;
-				vertical-align: -1.2rem;
-				margin-right: 0.5ch;
-			}
-		}
-		/* subheading v */
-		& > p {
-			/* text alignment with h1 */
-			font-size: 0.85rem;
-			margin: 1.4rem 0 0 0;
-			font-weight: 400;
-		
-			display: inline;
-			text-align: right;
-			
-			b {
-				font-weight: 550;
-			}
-		}
-	}
-
-	.atproto-logo {
-		color: color-mix(in oklch, LinkText 85%, Canvas);
-		white-space: nowrap;
-		&:not(:hover) {
-			text-decoration: none;
-		}
-		.atproto-logo-at-symbol {
-			color: LinkText;
-			.lucide {
-				width: 1em;
-				height: 1em;
-				vertical-align: bottom;
-				transform: translateY(-0.15em);
-			}
-		}
-		.atproto-logo-at-text {
-			color: LinkText;
-		}
-	}
-	nav {
-		display: grid;
-		grid-template-columns: subgrid;
-		font-size: .85rem;
-		> * {
-			grid-column: 2;
-		}
-	}
-	.search-form {
-		margin: 0px;
-		margin-bottom: 1rem;
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		align-items: baseline;
-		align-content: baseline;
-		justify-content: center;
-		gap: 0.5ch;
-		grid-column: 3;
-
-		
-	}
-	button {
-		width: 100%;
-		background: light-dark(#666, color-mix(in oklch, var(--secondary-colour) 100%, Canvas));
-	}
-	/* have the search button flex on small screens */
-	@media ( width < 600px ) {
-		nav {
-			
-			.search-form {
-				grid-column: unset;
-				
-			}
-			button[title="Search"] {
-				height: calc(100% - var(--focus-size));		
-			}
-			button:not([title="Search"]) {
-				text-align: left;
-			}
-		}
-	}
-	button[title="Search"] {
-		translate: 0px 1px;
-		padding: 0.25em 0.5em;
-		
-		
-	}
-	button:not([title="Search"]) {
-				text-align: left;
-				& .lucide {
-					transform:translateY(-2px)
-				}
-			}
-	
+    @media (max-width: 40rem) {
+      display: flex;
+      flex-direction: column;
+      nav {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+    }
+  }
 }

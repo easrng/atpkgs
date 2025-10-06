@@ -3,33 +3,33 @@ import * as v from "@atcute/lexicons/validations";
 import type {} from "@atcute/lexicons/ambient";
 
 const _mainSchema = /*#__PURE__*/ v.record(
-	/*#__PURE__*/ v.string(),
-	/*#__PURE__*/ v.object({
-		$type: /*#__PURE__*/ v.literal("org.purl.atpkgs.node.package"),
-		name: /*#__PURE__*/ v.recordKeyString(),
-		get tags() {
-			return /*#__PURE__*/ v.array(tagSchema);
-		},
-		get versions() {
-			return /*#__PURE__*/ v.array(versionSchema);
-		},
-	}),
+  /*#__PURE__*/ v.string(),
+  /*#__PURE__*/ v.object({
+    $type: /*#__PURE__*/ v.literal("org.purl.atpkgs.node.package"),
+    name: /*#__PURE__*/ v.recordKeyString(),
+    get tags() {
+      return /*#__PURE__*/ v.array(tagSchema);
+    },
+    get versions() {
+      return /*#__PURE__*/ v.array(versionSchema);
+    },
+  }),
 );
 const _tagSchema = /*#__PURE__*/ v.object({
-	$type: /*#__PURE__*/ v.optional(
-		/*#__PURE__*/ v.literal("org.purl.atpkgs.node.package#tag"),
-	),
-	tag: /*#__PURE__*/ v.recordKeyString(),
-	version: /*#__PURE__*/ v.recordKeyString(),
+  $type: /*#__PURE__*/ v.optional(
+    /*#__PURE__*/ v.literal("org.purl.atpkgs.node.package#tag"),
+  ),
+  tag: /*#__PURE__*/ v.recordKeyString(),
+  version: /*#__PURE__*/ v.recordKeyString(),
 });
 const _versionSchema = /*#__PURE__*/ v.object({
-	$type: /*#__PURE__*/ v.optional(
-		/*#__PURE__*/ v.literal("org.purl.atpkgs.node.package#version"),
-	),
-	cid: /*#__PURE__*/ v.cidLink(),
-	deprecated: /*#__PURE__*/ v.optional(/*#__PURE__*/ v.string()),
-	uri: /*#__PURE__*/ v.resourceUriString(),
-	version: /*#__PURE__*/ v.recordKeyString(),
+  $type: /*#__PURE__*/ v.optional(
+    /*#__PURE__*/ v.literal("org.purl.atpkgs.node.package#version"),
+  ),
+  cid: /*#__PURE__*/ v.cidLink(),
+  deprecated: /*#__PURE__*/ v.optional(/*#__PURE__*/ v.string()),
+  uri: /*#__PURE__*/ v.resourceUriString(),
+  version: /*#__PURE__*/ v.recordKeyString(),
 });
 
 type main$schematype = typeof _mainSchema;
@@ -49,7 +49,7 @@ export interface Tag extends v.InferInput<typeof tagSchema> {}
 export interface Version extends v.InferInput<typeof versionSchema> {}
 
 declare module "@atcute/lexicons/ambient" {
-	interface Records {
-		"org.purl.atpkgs.node.package": mainSchema;
-	}
+  interface Records {
+    "org.purl.atpkgs.node.package": mainSchema;
+  }
 }

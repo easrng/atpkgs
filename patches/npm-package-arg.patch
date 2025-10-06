@@ -1,0 +1,82 @@
+diff --git a/lib/npa.js b/lib/npa.js
+index d409b7f1becfcc31629c5d8dcede4cde009df268..95306d9f899313a0bc09cd1d792158830aac76fd 100644
+--- a/lib/npa.js
++++ b/lib/npa.js
+@@ -1,17 +1,13 @@
+ 'use strict'
+ 
+-const isWindows = process.platform === 'win32'
+-
+-const { URL } = require('node:url')
+ // We need to use path/win32 so that we get consistent results in tests, but this also means we need to manually convert backslashes to forward slashes when generating file: urls with paths.
+-const path = isWindows ? require('node:path/win32') : require('node:path')
+-const { homedir } = require('node:os')
++import * as path from '@std/path';
+ const HostedGit = require('hosted-git-info')
+ const semver = require('semver')
+ const validatePackageName = require('validate-npm-package-name')
+ const { log } = require('proc-log')
+ 
+-const hasSlashes = isWindows ? /\\|[/]/ : /[/]/
++const hasSlashes = /[/]/
+ const isURL = /^(?:git[+])?[a-z]+:/i
+ const isGit = /^[^@]+@[^:.]+\.[^:]+:.+$/i
+ const isFileType = /[.](?:tgz|tar.gz|tar)$/i
+@@ -63,9 +59,6 @@ function isFileSpec (spec) {
+   if (spec.toLowerCase().startsWith('file:')) {
+     return true
+   }
+-  if (isWindows) {
+-    return isWindowsFile.test(spec)
+-  }
+   // We never hit this in windows tests, obviously
+   /* istanbul ignore next */
+   return isPosixFile.test(spec)
+@@ -90,10 +83,6 @@ function resolve (name, spec, where, arg) {
+     res.name = name
+   }
+ 
+-  if (!where) {
+-    where = process.cwd()
+-  }
+-
+   if (isFileSpec(spec)) {
+     return fromFile(res, where)
+   } else if (isAliasSpec(spec)) {
+@@ -270,7 +259,7 @@ const encodedPathChars = new Map([
+   ['%', '%25'],
+   ['?', '%3F'],
+   ['[', '%5B'],
+-  ['\\', isWindows ? '/' : '%5C'],
++  ['\\', '%5C'],
+   [']', '%5D'],
+   ['^', '%5E'],
+   ['|', '%7C'],
+@@ -313,7 +302,7 @@ function fromFile (res, where) {
+   let specUrl
+   try {
+     // always put the '/' on "where", or else file:foo from /path/to/bar goes to /path/to/foo, when we want it to be /path/to/bar/foo
+-    resolvedUrl = new URL(rawSpec, `${pathToFileURL(path.resolve(where))}/`)
++    resolvedUrl = new URL(rawSpec, `${pathToFileURL(resolve(where))}/`)
+     specUrl = new URL(rawSpec)
+   } catch (originalError) {
+     const er = new Error('Invalid file: URL, must comply with RFC 8089')
+@@ -328,17 +317,10 @@ function fromFile (res, where) {
+   // turn /C:/blah into just C:/blah on windows
+   let specPath = decodeURIComponent(specUrl.pathname)
+   let resolvedPath = decodeURIComponent(resolvedUrl.pathname)
+-  if (isWindows) {
+-    specPath = specPath.replace(/^\/+([a-z]:\/)/i, '$1')
+-    resolvedPath = resolvedPath.replace(/^\/+([a-z]:\/)/i, '$1')
+-  }
+ 
+   // replace ~ with homedir, but keep the ~ in the saveSpec
+   // otherwise, make it relative to where param
+-  if (/^\/~(\/|$)/.test(specPath)) {
+-    res.saveSpec = `file:${specPath.substr(1)}`
+-    resolvedPath = path.resolve(homedir(), specPath.substr(3))
+-  } else if (!path.isAbsolute(rawSpec.slice(5))) {
++  if (!path.isAbsolute(rawSpec.slice(5))) {
+     res.saveSpec = `file:${path.relative(where, resolvedPath)}`
+   } else {
+     res.saveSpec = `file:${path.resolve(resolvedPath)}`

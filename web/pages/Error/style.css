@@ -1,21 +1,21 @@
 .page.page-error main {
-	flex-grow: 1;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	text-align: center;
-	flex-direction: column;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
 
-	h1 {
-		font-family: var(--font-header);
-		font-weight: 400;
-		max-width: 30rem;
-		margin: 0;
-		margin-bottom: 0.5rem;
-		font-size: 3rem;
-		word-wrap: break-word;
-	}
-	p {
-		margin: 0;
-	}
+  h1 {
+    font-family: var(--font-header);
+    font-weight: 400;
+    max-width: 30rem;
+    margin: 0;
+    margin-bottom: 0.5rem;
+    font-size: 3rem;
+    word-wrap: break-word;
+  }
+  p {
+    margin: 0;
+  }
 }
