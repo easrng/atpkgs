@@ -20,7 +20,7 @@ const _tagSchema = /*#__PURE__*/ v.object({
 		/*#__PURE__*/ v.literal("org.purl.atpkgs.node.package#tag"),
 	),
 	tag: /*#__PURE__*/ v.recordKeyString(),
-	version: /*#__PURE__*/ v.recordKeyString(),
+	version: /*#__PURE__*/ v.string(),
 });
 const _versionSchema = /*#__PURE__*/ v.object({
 	$type: /*#__PURE__*/ v.optional(
@@ -29,7 +29,7 @@ const _versionSchema = /*#__PURE__*/ v.object({
 	cid: /*#__PURE__*/ v.cidLink(),
 	deprecated: /*#__PURE__*/ v.optional(/*#__PURE__*/ v.string()),
 	uri: /*#__PURE__*/ v.resourceUriString(),
-	version: /*#__PURE__*/ v.recordKeyString(),
+	version: /*#__PURE__*/ v.string(),
 });
 
 type main$schematype = typeof _mainSchema;

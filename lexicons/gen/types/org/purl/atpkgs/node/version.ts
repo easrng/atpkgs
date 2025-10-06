@@ -6,7 +6,7 @@ const _atDependencySchema = /*#__PURE__*/ v.object({
 	$type: /*#__PURE__*/ v.optional(
 		/*#__PURE__*/ v.literal("org.purl.atpkgs.node.version#atDependency"),
 	),
-	name: /*#__PURE__*/ v.recordKeyString(),
+	name: /*#__PURE__*/ v.string(),
 	range: /*#__PURE__*/ v.string(),
 	uri: /*#__PURE__*/ v.resourceUriString(),
 });
@@ -62,14 +62,14 @@ const _mainSchema = /*#__PURE__*/ v.record(
 		get repository() {
 			return /*#__PURE__*/ v.optional(repositorySchema);
 		},
-		version: /*#__PURE__*/ v.recordKeyString(),
+		version: /*#__PURE__*/ v.string(),
 	}),
 );
 const _npmDependencySchema = /*#__PURE__*/ v.object({
 	$type: /*#__PURE__*/ v.optional(
 		/*#__PURE__*/ v.literal("org.purl.atpkgs.node.version#npmDependency"),
 	),
-	name: /*#__PURE__*/ v.recordKeyString(),
+	name: /*#__PURE__*/ v.string(),
 	range: /*#__PURE__*/ v.string(),
 	specifier: /*#__PURE__*/ v.string(),
 });

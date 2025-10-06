@@ -53,7 +53,6 @@ const lexicons: Record<string, LexiconDoc> = {
           },
           version: {
             type: "string",
-            format: "record-key",
             description: "version from the versions list",
           },
         },
@@ -64,7 +63,6 @@ const lexicons: Record<string, LexiconDoc> = {
         properties: {
           version: {
             type: "string",
-            format: "record-key",
             description: "must be valid semver",
           },
           uri: {
@@ -104,7 +102,6 @@ const lexicons: Record<string, LexiconDoc> = {
             },
             version: {
               type: "string",
-              format: "record-key",
               description: "must be valid semver",
             },
             description: {
@@ -229,7 +226,6 @@ const lexicons: Record<string, LexiconDoc> = {
         properties: {
           name: {
             type: "string",
-            format: "record-key",
             description: "local name for package",
           },
           uri: {
@@ -249,7 +245,6 @@ const lexicons: Record<string, LexiconDoc> = {
         properties: {
           name: {
             type: "string",
-            format: "record-key",
             description: "local name for package",
           },
           specifier: {
