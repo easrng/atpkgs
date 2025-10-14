@@ -43,6 +43,9 @@ pre,
 code {
   font-family: monospace, monospace;
 }
+code {
+  white-space: pre-wrap;
+}
 body {
   margin: 0;
 }
@@ -365,6 +368,12 @@ textarea {
   display: flex;
   align-items: baseline;
   gap: 1ch;
+  & > label {
+    flex-shrink: 0;
+  }
+  & > *:not(label) {
+    flex-shrink: 1;
+  }
 }
 
 .install-command {

@@ -1,6 +1,6 @@
 {
   "name": "atpkgs",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A decentralized package registry for JavaScript and TypeScript, built on @ATProtocol.",
   "type": "module",
   "scripts": {
@@ -13,6 +13,9 @@
     "dist/bin.js"
   ],
   "bin": {
-		"atpkgs": "dist/bin.js"
-	}
+    "atpkgs": "dist/bin.js"
+  },
+  "atpkgs": {
+    "name": "@purl.org/atpkgs"
+  }
 }

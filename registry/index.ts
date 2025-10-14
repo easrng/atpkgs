@@ -85,7 +85,7 @@ async function fetchPackument(pkg: string): Promise<Packument> {
       );
     }
     versions[version.version] = {
-      ...await fetchVersionInner(
+      ...(await fetchVersionInner(
         client,
         pds,
         pkg,
@@ -93,7 +93,7 @@ async function fetchPackument(pkg: string): Promise<Packument> {
         versionUriInfo.value.rkey,
         version.cid,
         version.version,
-      ),
+      )),
       deprecated: version.deprecated,
     };
   }
@@ -123,13 +123,15 @@ async function fetchVersionInner(
   cid?: CidLink,
   version?: string,
 ): Promise<PackumentVersion> {
-  const result = await unwrap(client.get("com.atproto.repo.getRecord", {
-    params: {
-      collection: "org.purl.atpkgs.node.version",
-      repo: repo,
-      rkey: rkey,
-    },
-  }));
+  const result = await unwrap(
+    client.get("com.atproto.repo.getRecord", {
+      params: {
+        collection: "org.purl.atpkgs.node.version",
+        repo: repo,
+        rkey: rkey,
+      },
+    }),
+  );
   const realCid = await serializeRecordCid(result.value as any);
   if (cid && cid.$link !== realCid.$link) {
     throw new Error("version cid mismatch");
@@ -143,19 +145,14 @@ async function fetchVersionInner(
   ): Record<string, string> | undefined => {
     return deps?.length
       ? Object.fromEntries(
-        deps.map((
-          e,
-        ) => {
+        deps.map((e) => {
           const s = e.$type === "org.purl.atpkgs.node.version#atDependency"
             ? "npm:" + fromAtUri(e.uri as CanonicalResourceUri)
             : e.specifier === e.name
             ? ""
             : "npm:" + e.specifier;
           parseRange(e.range);
-          return [
-            e.name,
-            s + (s ? "@" : "") + e.range,
-          ];
+          return [e.name, s + (s ? "@" : "") + e.range];
         }),
       )
       : undefined;
@@ -191,12 +188,11 @@ async function fetchVersionInner(
     keywords: record.keywords,
     license: record.license,
     repository: record.repository
-      ? ({ url: record.repository.uri, directory: record.repository.directory })
+      ? { url: record.repository.uri, directory: record.repository.directory }
       : undefined,
   };
 }
-async function fetchVersion(pkg: string, version: string) {
-}
+async function fetchVersion(pkg: string, version: string) {}
 
 export default {
   async fetch(req: Request): Promise<Response> {
@@ -220,11 +216,13 @@ export default {
       if (url.pathname === "/") {
         return Response.json({}, { headers: cors });
       }
-      const pathParts = url.pathname.split("/").slice(1).map((e) =>
-        decodeURIComponent(e)
-      );
+      const pathParts = url.pathname
+        .split("/")
+        .slice(1)
+        .map((e) => decodeURIComponent(e));
       if (
-        pathParts[0]?.startsWith("@") && !pathParts[0].includes("/") &&
+        pathParts[0]?.startsWith("@") &&
+        !pathParts[0].includes("/") &&
         pathParts[1]
       ) {
         pathParts[0] = pathParts.shift()! + "/" + pathParts[0];
@@ -239,21 +237,30 @@ export default {
           });
         }
       }
-      return Response.json({ error: "Not found" }, {
-        headers: cors,
-        status: 404,
-      });
-    } catch (e) {
-      if (e === 404) {
-        return Response.json({ error: "Not found" }, {
+      return Response.json(
+        { error: "Not found" },
+        {
           headers: cors,
           status: 404,
-        });
+        },
+      );
+    } catch (e) {
+      if (e === 404) {
+        return Response.json(
+          { error: "Not found" },
+          {
+            headers: cors,
+            status: 404,
+          },
+        );
       }
-      return Response.json({ error: e + "" }, {
-        headers: cors,
-        status: 500,
-      });
+      return Response.json(
+        { error: e + "" },
+        {
+          headers: cors,
+          status: 500,
+        },
+      );
     }
   },
 };

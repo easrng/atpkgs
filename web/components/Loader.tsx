@@ -14,7 +14,7 @@ export const Splash = errorWrap(() => {
   return (
     <div
       class={"page page-loading-splash" + (ssr ? " ssr" : "")}
-      {...ssr ? {} : { role: "presentation" }}
+      {...(ssr ? {} : { role: "presentation" })}
     >
       <Header />
       <main>
@@ -46,7 +46,7 @@ export function Loader({ loading }: { loading: boolean }) {
     }
   }, [loading]);
   useLayoutEffect(() => {
-    const hasPage = (typeof document !== "undefined") &&
+    const hasPage = typeof document !== "undefined" &&
       document.querySelector(".page");
     const wasFirstLoad = firstLoad;
     firstLoad = false;

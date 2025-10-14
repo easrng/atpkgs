@@ -88,48 +88,38 @@ export function decode(str: string) {
   if (out.at(-1) === "") {
     throw new TypeError("noncanonical encoding");
   }
-  return out.map((e, i) => {
-    if (!(i % 2)) return e;
-    const encoded = decoder.decode(fromBase32(e));
-    if (/[/a-z0-9.-]/.test(encoded)) {
-      throw new TypeError("noncanonical encoding");
-    }
-    return encoded;
-  }).join(
-    "",
-  );
+  return out
+    .map((e, i) => {
+      if (!(i % 2)) return e;
+      const encoded = decoder.decode(fromBase32(e));
+      if (/[/a-z0-9.-]/.test(encoded)) {
+        throw new TypeError("noncanonical encoding");
+      }
+      return encoded;
+    })
+    .join("");
 }
 
 export function toAtUri(pkg: string): CanonicalResourceUri {
   const errPrefix = "invalid atpkgs package name " + JSON.stringify(pkg) + ": ";
   if (!pkg.startsWith("@atpkgs/did")) {
-    throw new TypeError(
-      errPrefix + "should start with @atpkgs/did",
-    );
+    throw new TypeError(errPrefix + "should start with @atpkgs/did");
   }
-  const { length, 0: didMethod, 1: didBody, 2: rkey } = decode(
-    pkg.slice("@atpkgs/did".length),
-  )
-    .split(
-      "/",
-    );
+  const {
+    length,
+    0: didMethod,
+    1: didBody,
+    2: rkey,
+  } = decode(pkg.slice("@atpkgs/did".length)).split("/");
   const did = `did:${didMethod}:${didBody}`;
   if (length !== 3) {
-    throw new TypeError(
-      errPrefix + "encoded name should have 3 parts",
-    );
+    throw new TypeError(errPrefix + "encoded name should have 3 parts");
   }
   if (!isDid(did)) {
-    throw new TypeError(
-      errPrefix + "invalid did " + JSON.stringify(did),
-    );
+    throw new TypeError(errPrefix + "invalid did " + JSON.stringify(did));
   }
-  if (
-    !isRecordKey(rkey)
-  ) {
-    throw new TypeError(
-      errPrefix + "invalid rkey " + JSON.stringify(did),
-    );
+  if (!isRecordKey(rkey)) {
+    throw new TypeError(errPrefix + "invalid rkey " + JSON.stringify(did));
   }
   return `at://${did}/org.purl.atpkgs.node.package/${rkey}`;
 }
@@ -147,11 +137,14 @@ export function fromAtUri(uri: CanonicalResourceUri) {
       "expected collection to be org.purl.atpkgs.node.package",
     );
   }
-  return "@atpkgs/did" +
+  return (
+    "@atpkgs/did" +
     encode(
-      parsed.value.repo.replace(/^did:([^:]+):/, "$1/") + "/" +
+      parsed.value.repo.replace(/^did:([^:]+):/, "$1/") +
+        "/" +
         parsed.value.rkey,
-    );
+    )
+  );
 }
 
 /*

@@ -15,13 +15,12 @@ export function Search({ value }: { value?: string | undefined }) {
       class="search-form"
       onSubmit={(e) => {
         e.preventDefault();
-        const search = e.currentTarget.querySelector<HTMLInputElement>(
-          '[name="q"]',
-        )!.value;
+        const search =
+          e.currentTarget.querySelector<HTMLInputElement>('[name="q"]')!.value;
         let url;
         if (
           isPackageName(search) ||
-          search.startsWith("@") && isHandle(search.slice(1))
+          (search.startsWith("@") && isHandle(search.slice(1)))
         ) {
           url = "/" + search;
         } else {

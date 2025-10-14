@@ -50,15 +50,18 @@ export class CompositeHandleResolver implements HandleResolver {
         return new Promise((resolve, reject) => {
           let remaining = promises.length;
           for (const promise of promises) {
-            promise.then((did) => {
-              controller.abort();
-              resolve(did);
-            }, (e) => {
-              remaining--;
-              if (!remaining) {
-                reject(e);
-              }
-            });
+            promise.then(
+              (did) => {
+                controller.abort();
+                resolve(did);
+              },
+              (e) => {
+                remaining--;
+                if (!remaining) {
+                  reject(e);
+                }
+              },
+            );
           }
         });
       }

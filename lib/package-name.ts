@@ -7,9 +7,12 @@ const regex =
 export type PackageName = `@${Handle}/${string}`;
 export const isPackageName = (input: unknown): input is PackageName => {
   if (
-    typeof input !== "string" || input.length > (1 + 253 + 1 + 255) ||
-    input.length < (1 + 3 + 1 + 1)
-  ) return false;
+    typeof input !== "string" ||
+    input.length > 1 + 253 + 1 + 255 ||
+    input.length < 1 + 3 + 1 + 1
+  ) {
+    return false;
+  }
   const match = input.match(regex);
   if (!isHandle(match?.groups?.handle)) return false;
   return true;

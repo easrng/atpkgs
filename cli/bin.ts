@@ -116,17 +116,16 @@ function run(
           : resolve(),
     );
     child.on("error", reject);
-  })
-    .then(
-      () => {
-        write("\n" + styleText("dim", "╰──┄") + "\n");
-      },
-      (err) => {
-        write("\n" + styleText("dim", "╰──┄") + "\n");
-        process.stdout.write(buf);
-        throw err;
-      },
-    );
+  }).then(
+    () => {
+      write("\n" + styleText("dim", "╰──┄") + "\n");
+    },
+    (err) => {
+      write("\n" + styleText("dim", "╰──┄") + "\n");
+      process.stdout.write(buf);
+      throw err;
+    },
+  );
 }
 function isYarnBerry() {
   const version = execSync("yarn --version", {
@@ -172,8 +171,7 @@ async function add() {
           );
           const latest = packageInfo.tags.find((e) =>
             e.tag === "latest"
-          )?.version ??
-            "*";
+          )?.version ?? "*";
           if (latest) {
             version = `@^${latest}`;
           }
@@ -396,21 +394,23 @@ async function publish() {
           encodeURIComponent(`http://localhost:${port}/tarball?token=${token}`);
         process.stderr.write("- opening browser...\n");
         try {
-					await run(
-          	process.platform === "win32"
-            	? "explorer"
-          	  : process.platform === "darwin"
-        	    ? "open"
-      	      : "xdg-open",
-    	      [url],
-  	      );
-				} catch(e) {
-					process.stderr.write(
-						(process.stderr.isTTY ? "\r\x1b[K" : "") +
-							styleText("red", "✖") +
-							" Error opening link. Please open " + url + " manually.\n"
-					);
-				}
+          await run(
+            process.platform === "win32"
+              ? "explorer"
+              : process.platform === "darwin"
+              ? "open"
+              : "xdg-open",
+            [url],
+          );
+        } catch (e) {
+          process.stderr.write(
+            (process.stderr.isTTY ? "\r\x1b[K" : "") +
+              styleText("red", "✖") +
+              " Error opening link. Please open " +
+              url +
+              " manually.\n",
+          );
+        }
         const spinner = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
         const spin = () => {
           const current = spinner.shift() ?? "";
@@ -554,38 +554,68 @@ if (promise) {
     `atpkgs cli v${pkg.version}\n\n` +
       `Commands:\n` +
       `  ${
-        styleText("green", "atpkgs add <package>")
+        styleText(
+          "green",
+          "atpkgs add <package>",
+        )
       }   Install a package from atpkgs\n` +
       `  ${
-        styleText("green", "atpkgs publish")
+        styleText(
+          "green",
+          "atpkgs publish",
+        )
       }         Publish a package to atpkgs\n` +
       "\n" +
       `Options:\n` +
       `  ${
-        styleText("green", "-D, --save-dev")
+        styleText(
+          "green",
+          "-D, --save-dev",
+        )
       }         Package will be added to devDependencies\n` +
       `  ${
-        styleText("green", "-O, --save-optional")
+        styleText(
+          "green",
+          "-O, --save-optional",
+        )
       }    Package will be added to optionalDependencies\n` +
       `  ${
-        styleText("green", "--npm")
+        styleText(
+          "green",
+          "--npm",
+        )
       }                  Use npm to install and pack packages\n` +
       `  ${
-        styleText("green", "--yarn")
+        styleText(
+          "green",
+          "--yarn",
+        )
       }                 Use yarn to install and pack packages\n` +
       `  ${
-        styleText("green", "--pnpm")
+        styleText(
+          "green",
+          "--pnpm",
+        )
       }                 Use pnpm to install and pack packages\n` +
       `  ${
-        styleText("green", "--bun")
+        styleText(
+          "green",
+          "--bun",
+        )
       }                  Use bun to install and pack packages\n` +
       `  ${
-        styleText("green", "-h, --help")
+        styleText(
+          "green",
+          "-h, --help",
+        )
       }             Show this help text\n` +
       "\n" +
       `Environment variables:\n` +
       `  ${
-        styleText("green", "ATPKGS_URL")
+        styleText(
+          "green",
+          "ATPKGS_URL",
+        )
       }             Use a different AppView URL`,
   );
 }

@@ -1,6 +1,6 @@
 #app:has(.page-home) {
-	display: flex;
-	place-items: center;
+  display: flex;
+  place-items: center;
 }
 .page-home {
   width: 48em;

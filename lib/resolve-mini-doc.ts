@@ -10,14 +10,17 @@ import { type Client, ok as unwrap } from "@atcute/client";
 import { publicDidDocResolver, publicHandleResolver } from "./resolvers.ts";
 
 type UnionTuple = readonly v.BaseSchema<any>[];
-type kType = (keyof v.BaseSchema) & symbol;
+type kType = keyof v.BaseSchema & symbol;
 type UnionSchemaBase<TMembers extends UnionTuple> =
   & v.BaseSchema<unknown>
   & Partial<
-    Record<kType, {
-      in: InferUnionInput<TMembers>;
-      out: InferUnionOutput<TMembers>;
-    }>
+    Record<
+      kType,
+      {
+        in: InferUnionInput<TMembers>;
+        out: InferUnionOutput<TMembers>;
+      }
+    >
   >;
 type InferUnionInput<TMembers extends UnionTuple> = v.InferInput<
   TMembers[number]
@@ -25,9 +28,8 @@ type InferUnionInput<TMembers extends UnionTuple> = v.InferInput<
 type InferUnionOutput<TMembers extends UnionTuple> = v.InferOutput<
   TMembers[number]
 >;
-interface UnionSchema<
-  TMembers extends UnionTuple = UnionTuple,
-> extends UnionSchemaBase<TMembers> {
+interface UnionSchema<TMembers extends UnionTuple = UnionTuple>
+  extends UnionSchemaBase<TMembers> {
   readonly type: "union";
   readonly members: TMembers;
 }
@@ -169,22 +171,26 @@ const record = <TValue extends v.BaseSchema>(
 const didDoc = v.object({
   id: v.didString(),
   alsoKnownAs: v.array(v.string()),
-  service: v.array(v.object({
-    id: v.string(),
-    type: union([v.string(), v.array(v.string())]),
-    serviceEndpoint: union([
-      v.string(),
-      record(v.string()),
-      v.array(union([v.string(), record(v.string())])),
-    ]),
-  })),
-  verificationMethod: v.array(v.object({
-    id: v.string(),
-    type: v.string(),
-    controller: v.string(),
-    publicKeyMultibase: v.optional(v.string()),
-    publicKeyJwk: v.optional(v.unknown()),
-  })),
+  service: v.array(
+    v.object({
+      id: v.string(),
+      type: union([v.string(), v.array(v.string())]),
+      serviceEndpoint: union([
+        v.string(),
+        record(v.string()),
+        v.array(union([v.string(), record(v.string())])),
+      ]),
+    }),
+  ),
+  verificationMethod: v.array(
+    v.object({
+      id: v.string(),
+      type: v.string(),
+      controller: v.string(),
+      publicKeyMultibase: v.optional(v.string()),
+      publicKeyJwk: v.optional(v.unknown()),
+    }),
+  ),
 });
 
 export type MiniDoc = v.InferXRPCBodyInput<
@@ -209,24 +215,22 @@ function parseDidDoc(unverifiedDoc: unknown, did: Did) {
   }
   const pds_id = "#atproto_pds";
   const pds_full_id = did + pds_id;
-  const service = doc.service.find((s) =>
-    (s.id === pds_id || s.id === pds_full_id) &&
-    s.type === "AtprotoPersonalDataServer"
+  const service = doc.service.find(
+    (s) =>
+      (s.id === pds_id || s.id === pds_full_id) &&
+      s.type === "AtprotoPersonalDataServer",
   );
-  const pds = v.parse(
-    v.genericUriString(),
-    service?.serviceEndpoint,
-  );
+  const pds = v.parse(v.genericUriString(), service?.serviceEndpoint);
   const key_id = "#atproto";
   const key_full_id = did + key_id;
-  const key = doc.verificationMethod.find((s) =>
-    (s.id === key_id || s.id === key_full_id) &&
-    s.type === "Multikey" && s.controller === did && s.publicKeyMultibase
+  const key = doc.verificationMethod.find(
+    (s) =>
+      (s.id === key_id || s.id === key_full_id) &&
+      s.type === "Multikey" &&
+      s.controller === did &&
+      s.publicKeyMultibase,
   );
-  const signing_key = v.parse(
-    v.string(),
-    key?.publicKeyMultibase,
-  );
+  const signing_key = v.parse(v.string(), key?.publicKeyMultibase);
   return { unverified_handle, signing_key, pds };
 }
 
@@ -262,7 +266,9 @@ const handleResolverFromClient = (client?: Client): HandleResolver => {
 };
 
 export async function resolveMiniDoc(
-  { identifier }: v.InferInput<
+  {
+    identifier,
+  }: v.InferInput<
     XRPCQueries["com.bad-example.identity.resolveMiniDoc"]["params"]
   >,
   client?: Client,
@@ -272,7 +278,8 @@ export async function resolveMiniDoc(
   >
 > {
   const handleResolver = handleResolverFromClient(client);
-  const didDocResolver = /*pdsFetch
+  const didDocResolver =
+    /*pdsFetch
 		? new XrpcDidDocumentResolver({
 			serviceUrl: "https://pds.invalid",
 			fetch: pdsFetch,
@@ -280,7 +287,7 @@ export async function resolveMiniDoc(
 		:*/
     publicDidDocResolver;
   const did = identifier.startsWith("did:")
-    ? identifier as Did
+    ? (identifier as Did)
     : await handleResolver.resolve(identifier as Handle);
   const info = parseDidDoc(await didDocResolver.resolve(did as any), did);
   const handleDid = await handleResolver.resolve(

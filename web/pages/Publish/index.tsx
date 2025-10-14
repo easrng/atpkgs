@@ -1,5 +1,5 @@
 import { get, set } from "idb-keyval";
-import { UntarStream } from "@std/tar/untar-stream";
+import { TarStream, UntarStream } from "@std/tar";
 import { normalize } from "@std/path";
 import { assert } from "@std/assert";
 import { sha256 } from "@noble/hashes/sha2.js";
@@ -25,8 +25,7 @@ import { ok as unwrap } from "@atcute/client";
 import * as v from "@atcute/lexicons/validations";
 
 function isCorrectlyEncodedName(spec: string) {
-  return !spec.match(/[/@\s+%:]/) &&
-    spec === encodeURIComponent(spec);
+  return !spec.match(/[/@\s+%:]/) && spec === encodeURIComponent(spec);
 }
 
 function isValidScopedPackageName(spec: string) {
@@ -39,12 +38,15 @@ function isValidScopedPackageName(spec: string) {
     return false;
   }
 
-  return rest[0] && rest[1] &&
+  return (
+    rest[0] &&
+    rest[1] &&
     rest[0] === encodeURIComponent(rest[0]) &&
-    rest[1] === encodeURIComponent(rest[1]);
+    rest[1] === encodeURIComponent(rest[1])
+  );
 }
 const isEmail = (str: string) =>
-  str.includes("@") && (str.indexOf("@") < str.lastIndexOf("."));
+  str.includes("@") && str.indexOf("@") < str.lastIndexOf(".");
 function parseBugs(value: unknown): GenericUri | undefined {
   if (!value) return;
   if (typeof value === "string") {
@@ -70,9 +72,7 @@ function parseBugs(value: unknown): GenericUri | undefined {
       if (typeof valueObj.email === "string" && isEmail(valueObj.email)) {
         return `mailto:${valueObj.email}`;
       } else {
-        throw new TypeError(
-          "bugs.email field must be a string email",
-        );
+        throw new TypeError("bugs.email field must be a string email");
       }
     }
   }
@@ -86,12 +86,13 @@ function parsePerson(
   if (typeof value !== "string") {
     assert(typeof value === "object" && value !== null);
     const name = ("name" in value && value.name) || "";
-    const u = ("url" in value && value.url) ||
-      ("web" in value && value.web) || "";
-    const wrappedUrl = u ? (" (" + u + ")") : "";
+    const u = ("url" in value && value.url) || ("web" in value && value.web) ||
+      "";
+    const wrappedUrl = u ? " (" + u + ")" : "";
     const e = ("email" in value && value.email) ||
-      ("mail" in value && value.mail) || "";
-    const wrappedEmail = e ? (" <" + e + ">") : "";
+      ("mail" in value && value.mail) ||
+      "";
+    const wrappedEmail = e ? " <" + e + ">" : "";
     personString = name + wrappedEmail + wrappedUrl;
   } else {
     personString = value;
@@ -123,7 +124,7 @@ function parsePerson(
     (did === parsed.url
       ? undefined
       : parsed.url && URL.canParse(parsed.url)
-      ? parsed.url as GenericUri
+      ? (parsed.url as GenericUri)
       : undefined) ??
       (did === parsed.email ? undefined : `mailto:${parsed.email}`);
   if (!uri && !did) {
@@ -142,9 +143,7 @@ function parsePeople(
   field: string,
 ): OrgPurlAtpkgsNodeVersion.Person[] {
   if (!Array.isArray(value)) {
-    throw new TypeError(
-      field + " field must be an array",
-    );
+    throw new TypeError(field + " field must be an array");
   }
   return value.map((e, i) => parsePerson(e, `${field}[${i}]`));
 }
@@ -152,95 +151,108 @@ function parseDependencies(
   value: unknown,
   field: string,
 ): (
-  | OrgPurlAtpkgsNodeVersion.AtDependency & {
+  | (OrgPurlAtpkgsNodeVersion.AtDependency & {
     $type: "org.purl.atpkgs.node.version#atDependency";
-  }
-  | OrgPurlAtpkgsNodeVersion.NpmDependency & {
+  })
+  | (OrgPurlAtpkgsNodeVersion.NpmDependency & {
     $type: "org.purl.atpkgs.node.version#npmDependency";
-  }
+  })
 )[] {
   if (value === null || typeof value !== "object") {
     throw new TypeError(field + " field should be Record<string, string>");
   }
-  return Object.entries(value).map(([k, v]: [string, unknown]):
-    | OrgPurlAtpkgsNodeVersion.AtDependency & {
-      $type: "org.purl.atpkgs.node.version#atDependency";
-    }
-    | OrgPurlAtpkgsNodeVersion.NpmDependency & {
-      $type: "org.purl.atpkgs.node.version#npmDependency";
-    } => {
-    const result = validateNpmPackageName(k);
-    if (!result.validForOldPackages) {
-      throw new TypeError(
-        field + " key " + JSON.stringify(k) + " is not a valid package name: " +
-          result.errors.join(", "),
-      );
-    }
-    if (typeof v !== "string") {
-      throw new TypeError(
-        field + "[" + JSON.stringify(k) + "] should be string",
-      );
-    }
-    let pkg, semver;
-    if (tryParseRange(v)) {
-      pkg = k;
-      semver = v;
-    } else if (v.startsWith("npm:")) {
-      const versionIndex = v.indexOf("@", 5);
-      pkg = v.slice(
-        "npm:".length,
-        versionIndex === -1 ? Infinity : versionIndex,
-      );
-      const result = validateNpmPackageName(pkg);
+  return Object.entries(value).map(
+    ([k, v]: [string, unknown]):
+      | (OrgPurlAtpkgsNodeVersion.AtDependency & {
+        $type: "org.purl.atpkgs.node.version#atDependency";
+      })
+      | (OrgPurlAtpkgsNodeVersion.NpmDependency & {
+        $type: "org.purl.atpkgs.node.version#npmDependency";
+      }) => {
+      const result = validateNpmPackageName(k);
       if (!result.validForOldPackages) {
         throw new TypeError(
-          field + "[" + JSON.stringify(k) +
-            "] aliases to an invalid npm package name: " +
+          field +
+            " key " +
+            JSON.stringify(k) +
+            " is not a valid package name: " +
             result.errors.join(", "),
         );
       }
-      semver = versionIndex === -1 ? "*" : v.slice(versionIndex + 1);
-      parseRange(semver);
-    } else if (v.startsWith("jsr:")) {
-      const match = v.match(/^jsr:@([^@/]+)\/([^@/]+)(@.+)?$/);
-      if (!match) {
+      if (typeof v !== "string") {
         throw new TypeError(
-          field + "[" + JSON.stringify(k) +
-            "] is not a valid jsr package name",
+          field + "[" + JSON.stringify(k) + "] should be string",
         );
       }
-      pkg = "@jsr/" + match[1] + "__" + match[2];
-      const result = validateNpmPackageName(pkg);
-      if (!result.validForOldPackages) {
+      let pkg, semver;
+      if (tryParseRange(v)) {
+        pkg = k;
+        semver = v;
+      } else if (v.startsWith("npm:")) {
+        const versionIndex = v.indexOf("@", 5);
+        pkg = v.slice(
+          "npm:".length,
+          versionIndex === -1 ? Infinity : versionIndex,
+        );
+        const result = validateNpmPackageName(pkg);
+        if (!result.validForOldPackages) {
+          throw new TypeError(
+            field +
+              "[" +
+              JSON.stringify(k) +
+              "] aliases to an invalid npm package name: " +
+              result.errors.join(", "),
+          );
+        }
+        semver = versionIndex === -1 ? "*" : v.slice(versionIndex + 1);
+        parseRange(semver);
+      } else if (v.startsWith("jsr:")) {
+        const match = v.match(/^jsr:@([^@/]+)\/([^@/]+)(@.+)?$/);
+        if (!match) {
+          throw new TypeError(
+            field +
+              "[" +
+              JSON.stringify(k) +
+              "] is not a valid jsr package name",
+          );
+        }
+        pkg = "@jsr/" + match[1] + "__" + match[2];
+        const result = validateNpmPackageName(pkg);
+        if (!result.validForOldPackages) {
+          throw new TypeError(
+            field +
+              "[" +
+              JSON.stringify(k) +
+              "] aliases to an invalid npm package name: " +
+              result.errors.join(", "),
+          );
+        }
+        semver = match[3] ?? "*";
+        parseRange(semver);
+      } else {
         throw new TypeError(
-          field + "[" + JSON.stringify(k) +
-            "] aliases to an invalid npm package name: " +
-            result.errors.join(", "),
+          field +
+            "[" +
+            JSON.stringify(k) +
+            "] doesn't look like an npm or jsr package",
         );
       }
-      semver = match[3] ?? "*";
-      parseRange(semver);
-    } else {
-      throw new TypeError(
-        field + "[" + JSON.stringify(k) +
-          "] doesn't look like an npm or jsr package",
-      );
-    }
-    if (pkg.startsWith("@atpkgs/")) {
+      if (pkg.startsWith("@atpkgs/")) {
+        return {
+          $type: "org.purl.atpkgs.node.version#atDependency",
+          name: k,
+          uri: PackageEncoding.toAtUri(pkg),
+          range: semver,
+        };
+      }
       return {
-        $type: "org.purl.atpkgs.node.version#atDependency",
+        $type: "org.purl.atpkgs.node.version#npmDependency",
         name: k,
-        uri: PackageEncoding.toAtUri(pkg),
+        specifier: pkg,
         range: semver,
       };
-    }
-    return {
-      $type: "org.purl.atpkgs.node.version#npmDependency",
-      name: k,
-      specifier: pkg,
-      range: semver,
-    };
-  });
+    },
+  );
 }
 
 export async function PublishPage() {
@@ -250,12 +262,79 @@ export async function PublishPage() {
     if (url) {
       const res = await fetch(url);
       if (!res.ok) {
-        throw Object.assign(
-          new Error(res.status + ": " + (await res.text())),
-          { name: "TarballFetchFailed" },
-        );
+        throw Object.assign(new Error(res.status + ": " + (await res.text())), {
+          name: "TarballFetchFailed",
+        });
       }
-      const blob = await res.blob();
+      let base;
+      const blob = await new Response(
+        res
+          .body!.pipeThrough(new DecompressionStream("gzip"))
+          .pipeThrough(new UntarStream())
+          .pipeThrough(
+            new TransformStream({
+              async transform(entry, controller) {
+                let path = normalize(entry.path);
+                base ??= path.split("/")[0];
+                assert(
+                  !/^(\.\.)?\//.test(path),
+                  "package.json paths should be relative",
+                );
+                assert(
+                  path === base || path.startsWith(base + "/"),
+                  "package.json paths should share a common prefix",
+                );
+                path = path.slice(base!.length + 1);
+                if (path === "package.json") {
+                  const obj: unknown = await new Response(
+                    entry.readable,
+                  ).json();
+                  if (typeof obj === "object" && obj !== null) {
+                    const pkg = obj as Record<string, unknown>;
+                    if (typeof pkg.atpkgs === "object" && pkg.atpkgs !== null) {
+                      const overrides = pkg.atpkgs as Record<string, unknown>;
+                      delete pkg.atpkgs;
+                      for (const k in overrides) {
+                        if (
+                          typeof pkg[k] === "object" &&
+                          pkg[k] !== null &&
+                          typeof overrides[k] === "object" &&
+                          overrides[k] !== null
+                        ) {
+                          Object.assign(pkg[k], overrides[k]);
+                        } else {
+                          pkg[k] = overrides[k];
+                        }
+                      }
+                    }
+                    const blob = await new Response(
+                      JSON.stringify(pkg, null, 2),
+                    ).blob();
+                    entry.header.size = blob.size;
+                    entry.readable = blob.stream();
+                  }
+                }
+                if (entry.header.typeflag === "5") {
+                  entry.readable?.cancel();
+                  controller.enqueue({
+                    type: "directory",
+                    path: path ? "package/" + path : "package",
+                  });
+                } else {
+                  assert(entry.header.typeflag === "0", "tar entries should be a file or directory")
+                  controller.enqueue({
+                    type: "file",
+                    path: path ? "package/" + path : "package",
+                    readable: entry.readable,
+                    size: entry.header.size,
+                  });
+                }
+              },
+            }),
+          )
+          .pipeThrough(new TarStream())
+          .pipeThrough(new CompressionStream("gzip")),
+      ).blob();
       await set("publish-staged-tarball", blob);
       return blob;
     } else {
@@ -274,7 +353,8 @@ export async function PublishPage() {
   const [hashStream, tarStream] = tarball.stream().tee();
   const [{ pkg, filenames }, { cid, legacyShasum }] = await Promise.all([
     (async () => {
-      let pkg: Record<string, unknown> | undefined, filenames: string[] = [];
+      let pkg: Record<string, unknown> | undefined,
+        filenames: string[] = [];
       for await (
         const entry of tarStream
           .pipeThrough(new DecompressionStream("gzip"))
@@ -283,11 +363,11 @@ export async function PublishPage() {
         let path = normalize(entry.path);
         base ??= path.split("/")[0];
         assert(
-          !/^\.{0,2}\//.test(path),
+          !/^(\.\.)?\//.test(path),
           "package.json paths should be relative",
         );
         assert(
-          path.startsWith(base + "/"),
+          path === base || path.startsWith(base + "/"),
           "package.json paths should share a common prefix",
         );
         path = path.slice(base!.length + 1);
@@ -320,9 +400,8 @@ export async function PublishPage() {
   }
   if (
     pkg.name.startsWith(".") ||
-    !(isValidScopedPackageName(pkg.name) ||
-      isCorrectlyEncodedName(pkg.name)) ||
-    (pkg.name !== pkg.name.toLowerCase()) ||
+    !(isValidScopedPackageName(pkg.name) || isCorrectlyEncodedName(pkg.name)) ||
+    pkg.name !== pkg.name.toLowerCase() ||
     pkg.name === "node_modules" ||
     pkg.name === "favicon.ico" ||
     pkg.name !== pkg.name.trim()
@@ -380,9 +459,14 @@ export async function PublishPage() {
     funding = value.map((e: unknown, i) => {
       if (typeof e === "string" && URL.canParse(e)) return e as GenericUri;
       if (
-        typeof e === "object" && e !== null && "url" in e &&
-        typeof e.url === "string" && URL.canParse(e.url)
-      ) return e.url as GenericUri;
+        typeof e === "object" &&
+        e !== null &&
+        "url" in e &&
+        typeof e.url === "string" &&
+        URL.canParse(e.url)
+      ) {
+        return e.url as GenericUri;
+      }
       throw new Error(
         `funding[${i}] field must be string, {url: string}, or Array<string | {url: string}>.`,
       );
@@ -404,7 +488,9 @@ export async function PublishPage() {
   if (!license) {
     throw new TypeError("No license field.");
   } else if (
-    typeof license !== "string" || license.length < 1 || license.trim() === ""
+    typeof license !== "string" ||
+    license.length < 1 ||
+    license.trim() === ""
   ) {
     throw new TypeError("license should be a valid SPDX license expression");
   } else if (!validateLicense(license).validForNewPackages) {
@@ -419,8 +505,11 @@ export async function PublishPage() {
       }
       : pkg.repository;
     if (
-      typeof value !== "object" || value === null || !("url" in value) ||
-      typeof value.url !== "string" || !URL.canParse(value.url)
+      typeof value !== "object" ||
+      value === null ||
+      !("url" in value) ||
+      typeof value.url !== "string" ||
+      !URL.canParse(value.url)
     ) {
       throw new TypeError("repository should be a string url or {url: string}");
     }
@@ -466,6 +555,7 @@ export async function PublishPage() {
   };
   return (
     <PublishForm
+      pkg={pkg}
       partialRecord={partialRecord}
       originalName={pkg.name + ""}
       tarball={tarball}
@@ -473,15 +563,22 @@ export async function PublishPage() {
   );
 }
 
-function PublishForm(
-  { partialRecord, tarball, originalName }: {
-    partialRecord: Omit<OrgPurlAtpkgsNodeVersion.Main, "$type" | "name">;
-    tarball: Blob;
-    originalName: string;
-  },
-) {
+function PublishForm({
+  partialRecord,
+  tarball,
+  originalName,
+  pkg,
+}: {
+  partialRecord: Omit<OrgPurlAtpkgsNodeVersion.Main, "$type" | "name">;
+  tarball: Blob;
+  originalName: string;
+  pkg: unknown;
+}) {
   const [publishState, setPublishState] = useState<
-    null | { state: "publishing" } | { state: "error"; error: unknown } | {
+    | null
+    | { state: "publishing" }
+    | { state: "error"; error: unknown }
+    | {
       state: "done";
     }
   >(null);
@@ -531,59 +628,58 @@ function PublishForm(
                 setPublishState({ state: "publishing" });
                 try {
                   const name = inputRef.current!.value;
-                  const pkgResult = await (await session.rpc).get(
-                    "com.atproto.repo.getRecord",
-                    {
-                      params: {
-                        collection: "org.purl.atpkgs.node.package",
-                        repo: session.did,
-                        rkey: name,
-                      },
+                  const pkgResult = await (
+                    await session.rpc
+                  ).get("com.atproto.repo.getRecord", {
+                    params: {
+                      collection: "org.purl.atpkgs.node.package",
+                      repo: session.did,
+                      rkey: name,
                     },
-                  );
+                  });
                   const { value: packument, cid: packumentCid } = pkgResult.ok
-                    ? pkgResult.data as Omit<typeof pkgResult.data, "value"> & {
-                      value: OrgPurlAtpkgsNodePackage.Main;
-                    }
+                    ? (pkgResult.data as
+                      & Omit<typeof pkgResult.data, "value">
+                      & {
+                        value: OrgPurlAtpkgsNodePackage.Main;
+                      })
                     : { value: undefined, cid: undefined };
                   if (
-                    packument?.versions.find((e) =>
-                      e.version === partialRecord.version
+                    packument?.versions.find(
+                      (e) => e.version === partialRecord.version,
                     )
                   ) {
                     throw new Error("version already exists");
                   }
-                  const expectedCid =
-                    v.parse(v.blob(), partialRecord.dist).ref.$link;
+                  const expectedCid = v.parse(v.blob(), partialRecord.dist).ref
+                    .$link;
                   const uploadResult = await unwrap(
                     (await session.rpc).post("com.atproto.repo.uploadBlob", {
                       input: tarball,
                     }),
                   );
-                  if (
-                    uploadResult.blob.ref.$link !==
-                      expectedCid
-                  ) {
+                  if (uploadResult.blob.ref.$link !== expectedCid) {
                     throw new Error(
-                      "expected blob cid to be " + expectedCid + ", got " +
+                      "expected blob cid to be " +
+                        expectedCid +
+                        ", got " +
                         uploadResult.blob.ref.$link,
                     );
                   }
                   partialRecord.dist.mimeType = uploadResult.blob.mimeType;
-                  const created = await unwrap((await session.rpc).post(
-                    "com.atproto.repo.createRecord",
-                    {
+                  const created = await unwrap(
+                    (await session.rpc).post("com.atproto.repo.createRecord", {
                       input: {
                         collection: "org.purl.atpkgs.node.version",
                         repo: session.did,
-                        record: ({
+                        record: {
                           $type: "org.purl.atpkgs.node.version",
                           name,
                           ...partialRecord,
-                        }) satisfies OrgPurlAtpkgsNodeVersion.Main,
+                        } satisfies OrgPurlAtpkgsNodeVersion.Main,
                       },
-                    },
-                  ));
+                    }),
+                  );
                   if (!packument) {
                     await unwrap(
                       (await session.rpc).post(
@@ -593,7 +689,7 @@ function PublishForm(
                             collection: "org.purl.atpkgs.node.package",
                             repo: session.did,
                             rkey: name,
-                            record: ({
+                            record: {
                               $type: "org.purl.atpkgs.node.package",
                               name,
                               tags: [
@@ -611,7 +707,7 @@ function PublishForm(
                                   },
                                 },
                               ],
-                            }) satisfies OrgPurlAtpkgsNodePackage.Main,
+                            } satisfies OrgPurlAtpkgsNodePackage.Main,
                           },
                         },
                       ),
@@ -624,20 +720,21 @@ function PublishForm(
                           collection: "org.purl.atpkgs.node.package",
                           repo: session.did,
                           rkey: name,
-                          record: ({
+                          record: {
                             $type: "org.purl.atpkgs.node.package",
                             name,
-                            tags: parse(partialRecord.version).prerelease?.length
-                              ? packument.tags
-                              : [
-                                {
-                                  tag: "latest",
-                                  version: partialRecord.version,
-                                },
-                                ...packument.tags.filter((e) =>
-                                  e.tag !== "latest"
-                                ),
-                              ],
+                            tags:
+                              parse(partialRecord.version).prerelease?.length
+                                ? packument.tags
+                                : [
+                                  {
+                                    tag: "latest",
+                                    version: partialRecord.version,
+                                  },
+                                  ...packument.tags.filter(
+                                    (e) => e.tag !== "latest",
+                                  ),
+                                ],
                             versions: [
                               {
                                 version: partialRecord.version,
@@ -648,7 +745,7 @@ function PublishForm(
                               },
                               ...packument.versions,
                             ],
-                          }) satisfies OrgPurlAtpkgsNodePackage.Main,
+                          } satisfies OrgPurlAtpkgsNodePackage.Main,
                           swapRecord: packumentCid,
                         },
                       }),
@@ -663,9 +760,7 @@ function PublishForm(
               <div class="form-row">
                 <label for="publish-name">Publish as</label>
                 <div class="publish-input">
-                  <span ref={prefixRef}>
-                    {prefix}
-                  </span>
+                  <span ref={prefixRef}>{prefix}</span>
                   <input
                     ref={inputRef}
                     placeholder="my-package"
@@ -692,6 +787,8 @@ function PublishForm(
               </button>
             </form>
           )}
+        <br />
+        <code>{JSON.stringify(pkg, null, 2)}</code>
       </main>
     </div>
   );

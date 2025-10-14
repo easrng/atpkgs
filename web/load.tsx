@@ -9,7 +9,9 @@ import isNetworkError from "is-network-error";
 
 export type AsyncComponent<P> =
   & { _asyncComponent: true; _errorWrap: true }
-  & ((props: P) => ComponentChildren);
+  & ((
+    props: P,
+  ) => ComponentChildren);
 
 export function async<P extends object>(
   loader: (
@@ -35,15 +37,11 @@ export function async<P extends object>(
         $session: useSession(),
         $route: useLocation().route,
       };
-      const state = useRef<
-        {
-          deps: Set<string>;
-          prev: Record<string, unknown>;
-          comp: (props: P) => ComponentChildren;
-        }
-      >(
-        null,
-      );
+      const state = useRef<{
+        deps: Set<string>;
+        prev: Record<string, unknown>;
+        comp: (props: P) => ComponentChildren;
+      }>(null);
       let revalidate = false;
       if (!state.current) {
         state.current = {
@@ -75,7 +73,7 @@ export function async<P extends object>(
               );
               setLoading(false);
               return typeof data === "function"
-                ? data as (props: P) => ComponentChildren
+                ? (data as (props: P) => ComponentChildren)
                 : () => data;
             } catch (e) {
               setLoading(false);
@@ -102,27 +100,30 @@ export function async<P extends object>(
 
 export type ErrorWrappedComponent<P extends object> =
   & { _errorWrap: true }
-  & ((props: P) => ComponentChildren);
-export function errorWrap<
-  P extends object,
->(
+  & ((
+    props: P,
+  ) => ComponentChildren);
+export function errorWrap<P extends object>(
   Component: (props: P) => ComponentChildren,
 ): ErrorWrappedComponent<P> {
-  return Object.assign((props: P) => {
-    const [error] = useErrorBoundary();
-    return error
-      ? (
-        <ErrorPage
-          title={isNetworkError(error)
-            ? "Network Error"
-            : (error instanceof Error)
-            ? error.name.replace(/(?<!O(?=Auth))(?=[A-Z][a-z])/g, " ")
-            : "Error"}
-          subtitle={(error instanceof Error) ? error.message : error + ""}
-        />
-      )
-      : <Component {...props} />;
-  }, {
-    _errorWrap: true as const,
-  });
+  return Object.assign(
+    (props: P) => {
+      const [error] = useErrorBoundary();
+      return error
+        ? (
+          <ErrorPage
+            title={isNetworkError(error)
+              ? "Network Error"
+              : error instanceof Error
+              ? error.name.replace(/(?<!O(?=Auth))(?=[A-Z][a-z])/g, " ")
+              : "Error"}
+            subtitle={error instanceof Error ? error.message : error + ""}
+          />
+        )
+        : <Component {...props} />;
+    },
+    {
+      _errorWrap: true as const,
+    },
+  );
 }

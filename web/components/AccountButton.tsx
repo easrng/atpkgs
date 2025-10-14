@@ -59,9 +59,13 @@ function LogIn() {
               await new Promise((cb) => setTimeout(cb, 200));
               window.location.assign(authUrl);
               await new Promise((_resolve, reject) => {
-                window.addEventListener("pageshow", () => {
-                  reject(new Error(`user aborted the login request`));
-                }, { once: true });
+                window.addEventListener(
+                  "pageshow",
+                  () => {
+                    reject(new Error(`user aborted the login request`));
+                  },
+                  { once: true },
+                );
               });
             } catch (error) {
               setError(error);
@@ -82,7 +86,7 @@ function LogIn() {
             type="submit"
             title={submitting ? "Logging In" : "Log In"}
             aria-disabled={submitting}
-						class={submitting ? "button-loading" : ""}
+            class={submitting ? "button-loading" : ""}
           >
             <ArrowRight />
           </button>
@@ -119,7 +123,9 @@ function Account({ big }: { big?: boolean }) {
             onClick={async () => {
               localStorage.removeItem("handle-cached");
               try {
-                await (await rpc!).post("com.atproto.server.deleteSession", {
+                await (
+                  await rpc!
+                ).post("com.atproto.server.deleteSession", {
                   as: "json",
                 });
               } catch (e) {

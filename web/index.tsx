@@ -67,20 +67,21 @@ const OauthCallback = async(async () => {
   };
   return <Return />;
 });
-const SearchPage = async(async () =>
-  (await import("./pages/Search/index.js")).SearchPage
+const SearchPage = async(
+  async () => (await import("./pages/Search/index.js")).SearchPage,
 );
 const PublishPage = async(async () =>
   (await import("./pages/Publish/index.js")).PublishPage()
 );
-const ProfilePage = async<{ handle: Handle }>(async (
-  { handle, $session, $route },
-) =>
-  await (await import("./pages/Profile/index.js")).ProfilePage({
-    handle,
-    $session,
-    $route,
-  })
+const ProfilePage = async<{ handle: Handle }>(
+  async ({ handle, $session, $route }) =>
+    await (
+      await import("./pages/Profile/index.js")
+    ).ProfilePage({
+      handle,
+      $session,
+      $route,
+    }),
 );
 
 function Routes() {
@@ -107,17 +108,19 @@ function Routes() {
   );
 }
 
-export type SessionData = {
-  did: undefined;
-  session: undefined;
-  rpc: undefined;
-  handle: undefined;
-} | {
-  did: Did;
-  session: Promise<Session>;
-  rpc: Promise<Client>;
-  handle: Handle;
-};
+export type SessionData =
+  | {
+    did: undefined;
+    session: undefined;
+    rpc: undefined;
+    handle: undefined;
+  }
+  | {
+    did: Did;
+    session: Promise<Session>;
+    rpc: Promise<Client>;
+    handle: Handle;
+  };
 const SessionContext = createContext<SessionData>({
   did: undefined,
   handle: undefined,
@@ -129,28 +132,33 @@ export function useSession(): SessionData {
 }
 const initHandle = (availableSession: Did | undefined) =>
   availableSession
-    ? localStorage.getItem("handle-cached") as Handle ?? "handle.invalid"
+    ? ((localStorage.getItem("handle-cached") as Handle) ?? "handle.invalid")
     : undefined;
 function SessionProvider({ children }: { children: ComponentChildren }) {
   const [handle, setHandle] = useState<Handle | undefined>();
   const prevSessionList = useRef<string>("");
   const did = typeof document !== "undefined"
-    ? useSyncExternalStore((flush) => {
-      const listener = () => {
+    ? useSyncExternalStore(
+      (flush) => {
+        const listener = () => {
+          const sessions = listStoredSessions();
+          while (sessions.length > 1) {
+            deleteStoredSession(sessions.shift()!);
+          }
+          const current = sessions.join("\0");
+          if (current !== prevSessionList.current) {
+            prevSessionList.current = current;
+            flush();
+          }
+        };
+        addEventListener("storage", listener);
+        return () => removeEventListener("storage", listener);
+      },
+      () => {
         const sessions = listStoredSessions();
-        while (sessions.length > 1) deleteStoredSession(sessions.shift()!);
-        const current = sessions.join("\0");
-        if (current !== prevSessionList.current) {
-          prevSessionList.current = current;
-          flush();
-        }
-      };
-      addEventListener("storage", listener);
-      return () => removeEventListener("storage", listener);
-    }, () => {
-      const sessions = listStoredSessions();
-      return sessions[0];
-    })
+        return sessions[0];
+      },
+    )
     : undefined;
   const { session, rpc } = useMemo(() => {
     if (did) {
@@ -178,38 +186,25 @@ function SessionProvider({ children }: { children: ComponentChildren }) {
       return {};
     }
   }, [did]);
-  const optimisticHandle = useMemo(
-    () => initHandle(did),
-    [did],
-  );
+  const optimisticHandle = useMemo(() => initHandle(did), [did]);
   const obj = useMemo(
     (): SessionData =>
       did
-        ? ({
+        ? {
           did: did,
           session: session!,
           rpc: rpc!,
           handle: handle ?? optimisticHandle ?? "handle.invalid",
-        })
-        : ({
+        }
+        : {
           did: undefined,
           handle: undefined,
           rpc: undefined,
           session: undefined,
-        }),
-    [
-      did,
-      session,
-      rpc,
-      handle,
-      optimisticHandle,
-    ],
+        },
+    [did, session, rpc, handle, optimisticHandle],
   );
-  return (
-    <SessionContext value={obj}>
-      {children}
-    </SessionContext>
-  );
+  return <SessionContext value={obj}>{children}</SessionContext>;
 }
 
 export function App() {
@@ -226,7 +221,7 @@ export const TitleContext = createContext<(title: string) => void>(() => {});
 
 if (typeof window !== "undefined") {
   hydrate(
-    <TitleContext value={(title_) => document.title = title_}>
+    <TitleContext value={(title_) => (document.title = title_)}>
       <App />
     </TitleContext>,
     document.getElementById("app")!,
@@ -236,7 +231,7 @@ if (typeof window !== "undefined") {
 export async function prerender(data: any) {
   let title: string = "";
   const result = await ssr(
-    <TitleContext value={(title_) => title = title_}>
+    <TitleContext value={(title_) => (title = title_)}>
       <App {...data} />
     </TitleContext>,
   );

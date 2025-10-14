@@ -23,25 +23,28 @@ import {
 import { parse } from "@std/semver";
 import { serializeRecordCid } from "../../../lib/cid";
 
-const ProfilePageInner = (
-  { doc, avatarUri, displayName, pronouns, website, packages }: {
-    doc: MiniDoc;
-    originalHandle: Handle;
-    avatarUri: string;
-    displayName: string | undefined;
-    pronouns: string | undefined;
-    website: GenericUri | undefined;
-    packages: {
-      package: OrgPurlAtpkgsNodePackage.Main;
-      version?: OrgPurlAtpkgsNodeVersion.Main;
-    }[];
-  },
-) => {
+const ProfilePageInner = ({
+  doc,
+  avatarUri,
+  displayName,
+  pronouns,
+  website,
+  packages,
+}: {
+  doc: MiniDoc;
+  originalHandle: Handle;
+  avatarUri: string;
+  displayName: string | undefined;
+  pronouns: string | undefined;
+  website: GenericUri | undefined;
+  packages: {
+    package: OrgPurlAtpkgsNodePackage.Main;
+    version?: OrgPurlAtpkgsNodeVersion.Main;
+  }[];
+}) => {
   return (
     <div class="page page-profile">
-      <Title>
-        {`@${doc.handle}'s packages`}
-      </Title>
+      <Title>{`@${doc.handle}'s packages`}</Title>
       <Header searchValue={"@" + doc.handle} />
       <main>
         <div class="user-info">
@@ -60,10 +63,7 @@ const ProfilePageInner = (
             )}
             {website && (
               <div class="website">
-                <Globe />{" "}
-                <a href={website}>
-                  {website}
-                </a>
+                <Globe /> <a href={website}>{website}</a>
               </div>
             )}
           </div>
@@ -82,10 +82,12 @@ const ProfilePageInner = (
                           <span class="version">{e.version.version}</span>
                         </>
                       )
-                      : ""}
+                      : (
+                        ""
+                      )}
                   </h3>
                   <pre class="install-command">
-										npx atpkgs add @{doc.handle}/{e.package.name}
+									npx atpkgs add @{doc.handle}/{e.package.name}
                   </pre>
                   {e.version?.description
                     ? <p>{e.version?.description}</p>
@@ -104,17 +106,16 @@ const ProfilePageInner = (
   );
 };
 
-export const ProfilePage = async (
-  { handle, $session, $route }: {
-    handle: Handle;
-    $session: SessionData;
-    $route: (url: string, replace: boolean) => void;
-  },
-) => {
-  const doc = await resolveMiniDoc(
-    { identifier: handle },
-    await $session.rpc,
-  );
+export const ProfilePage = async ({
+  handle,
+  $session,
+  $route,
+}: {
+  handle: Handle;
+  $session: SessionData;
+  $route: (url: string, replace: boolean) => void;
+}) => {
+  const doc = await resolveMiniDoc({ identifier: handle }, await $session.rpc);
   if (doc.handle !== handle) {
     $route("/@" + doc.handle, true);
   }
@@ -129,14 +130,16 @@ export const ProfilePage = async (
         rkey: "self",
       },
     }),
-    unwrap(client.get("com.atproto.repo.listRecords", {
-      params: {
-        collection: "org.purl.atpkgs.node.package",
-        repo: doc.did,
-        // TODO: pagination
-        limit: 100,
-      },
-    })),
+    unwrap(
+      client.get("com.atproto.repo.listRecords", {
+        params: {
+          collection: "org.purl.atpkgs.node.package",
+          repo: doc.did,
+          // TODO: pagination
+          limit: 100,
+        },
+      }),
+    ),
   ]);
   const profile: Pick<
     InferOutput<AppBskyActorProfile.mainSchema>,
@@ -144,50 +147,54 @@ export const ProfilePage = async (
   > = profileResponse.ok
     ? v.parse(AppBskyActorProfile.mainSchema, profileResponse.data.value)
     : {};
-  const packages = await Promise.all(packagesResponse.records.map(async (e) => {
-    let version;
-    const parsed = parseResourceUri(e.uri);
-    if (!parsed.ok) throw new Error(parsed.error);
-    const pkg = v.parse(OrgPurlAtpkgsNodePackage.mainSchema, e.value);
-    if (pkg.name !== parsed.value.rkey) {
-      throw new Error("package name must match rkey");
-    }
-    const first = pkg.tags.find((e) => e.tag === "latest")?.version ??
-      pkg.versions[0]?.version;
-    const firstO = pkg.versions.find((v) => v.version === first);
-    if (firstO) {
-      parse(firstO.version);
-      const versionUriInfo = parseCanonicalResourceUri(firstO.uri);
-      if (!versionUriInfo.ok) throw new Error(versionUriInfo.error);
-      if (
-        versionUriInfo.value.collection !== "org.purl.atpkgs.node.version"
-      ) {
-        throw new Error(
-          "unexpected collection in " + JSON.stringify(firstO.uri),
+  const packages = await Promise.all(
+    packagesResponse.records.map(async (e) => {
+      let version;
+      const parsed = parseResourceUri(e.uri);
+      if (!parsed.ok) throw new Error(parsed.error);
+      const pkg = v.parse(OrgPurlAtpkgsNodePackage.mainSchema, e.value);
+      if (pkg.name !== parsed.value.rkey) {
+        throw new Error("package name must match rkey");
+      }
+      const first = pkg.tags.find((e) => e.tag === "latest")?.version ??
+        pkg.versions[0]?.version;
+      const firstO = pkg.versions.find((v) => v.version === first);
+      if (firstO) {
+        parse(firstO.version);
+        const versionUriInfo = parseCanonicalResourceUri(firstO.uri);
+        if (!versionUriInfo.ok) throw new Error(versionUriInfo.error);
+        if (
+          versionUriInfo.value.collection !== "org.purl.atpkgs.node.version"
+        ) {
+          throw new Error(
+            "unexpected collection in " + JSON.stringify(firstO.uri),
+          );
+        }
+        const result = await unwrap(
+          client.get("com.atproto.repo.getRecord", {
+            params: {
+              collection: "org.purl.atpkgs.node.version",
+              repo: versionUriInfo.value.repo,
+              rkey: versionUriInfo.value.rkey,
+            },
+          }),
         );
+        const realCid = await serializeRecordCid(result.value as any);
+        if (firstO.cid && firstO.cid.$link !== realCid.$link) {
+          throw new Error("version cid mismatch");
+        }
+        const record = v.parse(
+          OrgPurlAtpkgsNodeVersion.mainSchema,
+          result.value,
+        );
+        if (firstO.version !== record.version) {
+          throw new Error("inner version mismatch");
+        }
+        version = record;
       }
-      const result = await unwrap(client.get("com.atproto.repo.getRecord", {
-        params: {
-          collection: "org.purl.atpkgs.node.version",
-          repo: versionUriInfo.value.repo,
-          rkey: versionUriInfo.value.rkey,
-        },
-      }));
-      const realCid = await serializeRecordCid(result.value as any);
-      if (firstO.cid && firstO.cid.$link !== realCid.$link) {
-        throw new Error("version cid mismatch");
-      }
-      const record = v.parse(
-        OrgPurlAtpkgsNodeVersion.mainSchema,
-        result.value,
-      );
-      if (firstO.version !== record.version) {
-        throw new Error("inner version mismatch");
-      }
-      version = record;
-    }
-    return { package: pkg, version };
-  }));
+      return { package: pkg, version };
+    }),
+  );
   const avatarCid = profile.avatar?.ref.$link;
   return (
     <ProfilePageInner

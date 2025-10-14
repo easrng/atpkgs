@@ -1,8 +1,5 @@
 var scopedPackagePattern = new RegExp("^(?:@([^/]+?)[/])?([^/]+?)$");
-var exclusionList = [
-  "node_modules",
-  "favicon.ico",
-];
+var exclusionList = ["node_modules", "favicon.ico"];
 
 export default function validateNpmPackageName(name: string) {
   var warnings: string[] = [];
@@ -78,7 +75,8 @@ export default function validateNpmPackageName(name: string) {
       }
 
       if (
-        encodeURIComponent(user) === user && encodeURIComponent(pkg) === pkg
+        encodeURIComponent(user) === user &&
+        encodeURIComponent(pkg) === pkg
       ) {
         return done(warnings, errors);
       }

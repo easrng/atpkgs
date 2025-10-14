@@ -38,9 +38,9 @@ export function hashToCid(hash: _SHA256) {
   return CID.toCidLink(cid);
 }
 
-export async function serializeRecordCid(
-  record: { $type: string },
-): Promise<CidLink> {
+export async function serializeRecordCid(record: {
+  $type: string;
+}): Promise<CidLink> {
   const bytes = encode(record);
 
   const cid = await CID.create(0x71, bytes);
