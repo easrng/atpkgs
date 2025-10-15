@@ -254,6 +254,7 @@ function parseDependencies(
     },
   );
 }
+const BYTES_MIME = "application/octet-stream";
 
 export async function PublishPage() {
   const tarball = await (async (): Promise<Blob> => {
@@ -301,7 +302,7 @@ export async function PublishPage() {
                           typeof overrides[k] === "object" &&
                           overrides[k] !== null
                         ) {
-                          Object.assign(pkg[k], overrides[k]);
+                          Object.assign(pkg[k] as any, overrides[k]);
                         } else {
                           pkg[k] = overrides[k];
                         }
@@ -321,7 +322,10 @@ export async function PublishPage() {
                     path: path ? "package/" + path : "package",
                   });
                 } else {
-                  assert(entry.header.typeflag === "0", "tar entries should be a file or directory")
+                  assert(
+                    entry.header.typeflag === "0",
+                    "tar entries should be a file or directory",
+                  );
                   controller.enqueue({
                     type: "file",
                     path: path ? "package/" + path : "package",
@@ -334,6 +338,7 @@ export async function PublishPage() {
           )
           .pipeThrough(new TarStream())
           .pipeThrough(new CompressionStream("gzip")),
+        { headers: { "content-type": BYTES_MIME } },
       ).blob();
       await set("publish-staged-tarball", blob);
       return blob;
@@ -410,7 +415,6 @@ export async function PublishPage() {
       "Invalid internal package name: " + JSON.stringify(pkg.name),
     );
   }
-  const name = pkg.name;
   if (typeof pkg.version !== "string") {
     throw new Error("version field must be a string.");
   }
@@ -525,7 +529,7 @@ export async function PublishPage() {
   const partialRecord: Omit<OrgPurlAtpkgsNodeVersion.Main, "$type" | "name"> = {
     dist: {
       $type: "blob",
-      mimeType: "application/octet-stream",
+      mimeType: BYTES_MIME,
       ref: cid,
       size: tarball.size,
     },
