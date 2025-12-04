@@ -14,10 +14,10 @@ import {
 	PopoverButton,
 	PopoverPanel,
 } from "@headlessui/react";
-import { ArrowRight, AtSign, LoaderCircleIcon, UserRound } from "lucide-preact";
+import { ArrowRight, AtSign, UserRound } from "lucide-preact";
 import { useLayoutEffect, useRef, useState } from "preact/hooks";
 import { resolveMiniDoc } from "../../lib/resolve-mini-doc";
-import type { Did, Handle } from "@atcute/lexicons";
+import type { ActorIdentifier } from "@atcute/lexicons";
 import { createAuthorizationUrl } from "@atcute/oauth-browser-client";
 import { useLocation } from "../router.js";
 import { useSession } from "..";
@@ -51,9 +51,12 @@ function LogIn() {
 							let metadata: AuthorizationServerMetadata | undefined;
 							let identity: IdentityMetadata | undefined;
 							const value = input.current!.value;
-							async function tryHandle() {
+							async function tryIdentity(value: string) {
 								const doc = await resolveMiniDoc({
-									identifier: value.replace(/^at:\/{0,2}/, "") as Handle,
+									identifier: value.replace(
+										/^at:\/{0,2}/,
+										"",
+									) as ActorIdentifier,
 								});
 								({ metadata } = await resolveFromService(doc.pds));
 								identity = {
@@ -67,13 +70,13 @@ function LogIn() {
 									`https://${value.replace(/^https?:\/{0,2}/, "")}`,
 								));
 							}
-							if (value.startsWith("at:")) {
-								await tryHandle();
+							if (value.startsWith("at:") || value.startsWith("did:")) {
+								await tryIdentity(value);
 							} else if (/^https?:/.test(value)) {
 								await tryPds();
 							} else {
 								try {
-									await tryHandle();
+									await tryIdentity(value);
 								} catch (e) {
 									if (
 										e instanceof DidNotFoundError ||
@@ -82,7 +85,11 @@ function LogIn() {
 										try {
 											await tryPds();
 										} catch {
-											throw e;
+											try {
+												await tryIdentity("did:web:" + value);
+											} catch {
+												throw e;
+											}
 										}
 									} else {
 										throw e;

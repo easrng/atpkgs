@@ -116,6 +116,7 @@ export function errorWrap<P extends object>(
               ? "Network Error"
               : error instanceof Error
               ? error.name.replace(/(?<!O(?=Auth))(?=[A-Z][a-z])/g, " ")
+                .replaceAll("Did ", "DID ")
               : "Error"}
             subtitle={error instanceof Error ? error.message : error + ""}
           />
