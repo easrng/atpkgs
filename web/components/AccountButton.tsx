@@ -48,15 +48,12 @@ function LogIn() {
 						if (submitting) return;
 						try {
 							setSubmitting(true);
-							let metadata: AuthorizationServerMetadata;
+							let metadata: AuthorizationServerMetadata | undefined;
 							let identity: IdentityMetadata | undefined;
-							const handle = input.current!.value.replace(
-								/^(https?|at):\/{0,2}/,
-								"",
-							) as Handle;
-							try {
+							const value = input.current!.value;
+							async function tryHandle() {
 								const doc = await resolveMiniDoc({
-									identifier: handle,
+									identifier: value.replace(/^at:\/{0,2}/, "") as Handle,
 								});
 								({ metadata } = await resolveFromService(doc.pds));
 								identity = {
@@ -64,21 +61,36 @@ function LogIn() {
 									pds: new URL(doc.pds),
 									raw: doc.handle,
 								};
-							} catch (e) {
-								if (
-									e instanceof DidNotFoundError ||
-									e instanceof FailedHandleResolutionError
-								) {
-									try {
-										({ metadata } = await resolveFromService(
-											`https://${handle}`,
-										));
-									} catch {
+							}
+							async function tryPds() {
+								({ metadata } = await resolveFromService(
+									`https://${value.replace(/^https?:\/{0,2}/, "")}`,
+								));
+							}
+							if (value.startsWith("at:")) {
+								await tryHandle();
+							} else if (/^https?:/.test(value)) {
+								await tryPds();
+							} else {
+								try {
+									await tryHandle();
+								} catch (e) {
+									if (
+										e instanceof DidNotFoundError ||
+										e instanceof FailedHandleResolutionError
+									) {
+										try {
+											await tryPds();
+										} catch {
+											throw e;
+										}
+									} else {
 										throw e;
 									}
-								} else {
-									throw e;
 								}
+							}
+							if (!metadata) {
+								throw new Error("this should be unreachable");
 							}
 							const authUrl = await createAuthorizationUrl({
 								metadata,
