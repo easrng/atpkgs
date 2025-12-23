@@ -8,11 +8,14 @@ import { Splash } from "./components/Loader.js";
 import { type ComponentChildren, createContext, type VNode } from "preact";
 import {
   configureOAuth,
+  createAuthorizationUrl,
   deleteStoredSession,
   finalizeAuthorization,
   getSession,
+  type IdentityMetadata,
   listStoredSessions,
   OAuthUserAgent,
+  resolveFromService,
   type Session,
 } from "@atcute/oauth-browser-client";
 import { async, errorWrap, type ErrorWrappedComponent } from "./load.js";
@@ -43,7 +46,46 @@ if (typeof document !== "undefined") {
     },
   });
 }
-
+const OauthPickerCallback = async(async () => {
+  if (typeof document === "undefined") return <Splash />;
+  const params = new URLSearchParams(location.search.slice(1));
+  let { metadata } = await resolveFromService(`https://${params.get("pds")}`);
+  const authUrl = await createAuthorizationUrl({
+    metadata,
+    scope: "atproto transition:generic",
+    identity: params.has("login_hint")
+      ? ({
+        raw: params.get("login_hint"),
+      } as IdentityMetadata)
+      : undefined,
+    // TODO
+    // prompt: params.get("prompt") === "create" ? "create" : undefined,
+  });
+  await new Promise((cb) => setTimeout(cb, 200));
+  window.location.assign(authUrl);
+  await new Promise((_resolve, reject) => {
+    window.addEventListener(
+      "pageshow",
+      () => {
+        reject(new Error(`user aborted the login request`));
+      },
+      { once: true },
+    );
+  });
+  const Return = () => {
+    const [splash, setSplash] = useState(true);
+    useLayoutEffect(() => {
+      setSplash(false);
+    }, []);
+    if (splash) return <Splash />;
+    const returnTo = localStorage.getItem("oauth-return-to") ?? "/";
+    localStorage.removeItem("oauth-return-to");
+    useLocation().route(returnTo, true);
+    dispatchEvent(new StorageEvent("storage"));
+    return null;
+  };
+  return <Return />;
+});
 const OauthCallback = async(async () => {
   if (typeof document === "undefined") return <Splash />;
   const params = new URLSearchParams(location.hash.slice(1));
@@ -97,6 +139,7 @@ function Routes() {
       <Route path="/" component={Home} />
       <Route path="/search" component={SearchPage} />
       <Route path="/oauth/callback" component={OauthCallback} />
+      <Route path="/oauth/picker-callback" component={OauthPickerCallback} />
       <Route path="/publish" component={PublishPage} />
       <Route
         default={!fallback}
@@ -132,7 +175,7 @@ export function useSession(): SessionData {
 }
 const initHandle = (availableSession: Did | undefined) =>
   availableSession
-    ? ((localStorage.getItem("handle-cached") as Handle) ?? "handle.invalid")
+    ? (localStorage.getItem("handle-cached") as Handle) ?? "handle.invalid"
     : undefined;
 function SessionProvider({ children }: { children: ComponentChildren }) {
   const [handle, setHandle] = useState<Handle | undefined>();

@@ -55,7 +55,7 @@ function LogIn() {
 								const doc = await resolveMiniDoc({
 									identifier: value.replace(
 										/^at:\/{0,2}/,
-										"",
+										""
 									) as ActorIdentifier,
 								});
 								({ metadata } = await resolveFromService(doc.pds));
@@ -67,7 +67,7 @@ function LogIn() {
 							}
 							async function tryPds() {
 								({ metadata } = await resolveFromService(
-									`https://${value.replace(/^https?:\/{0,2}/, "")}`,
+									`https://${value.replace(/^https?:\/{0,2}/, "")}`
 								));
 							}
 							if (value.startsWith("at:") || value.startsWith("did:")) {
@@ -113,7 +113,7 @@ function LogIn() {
 									() => {
 										reject(new Error(`user aborted the login request`));
 									},
-									{ once: true },
+									{ once: true }
 								);
 							});
 						} catch (error) {
@@ -145,19 +145,37 @@ function LogIn() {
 	);
 }
 
+function PickerLogIn() {
+	const location = useLocation();
+	return (
+		<button
+			onClick={async (e) => {
+				e.preventDefault();
+				localStorage.setItem("oauth-return-to", location.url);
+				await new Promise((cb) => setTimeout(cb, 200));
+				window.location.href =
+					`https://atproto.wisp.place/?next=` +
+					encodeURIComponent(window.location.origin + "/oauth/picker-callback");
+			}}
+		>
+			<AtSign /> Log In
+		</button>
+	);
+}
+
 function Account({ big }: { big?: boolean }) {
 	const { did, handle, rpc } = useSession();
 	return (
 		<Menu>
 			<MenuButton title={"Signed in as " + handle!}>
-				{big
-					? (
-						<>
-							<AtSign />
-							{handle}
-						</>
-					)
-					: <UserRound />}
+				{big ? (
+					<>
+						<AtSign />
+						{handle}
+					</>
+				) : (
+					<UserRound />
+				)}
 			</MenuButton>
 			<MenuItems anchor="bottom" className="menu">
 				<MenuItem>
@@ -207,14 +225,14 @@ export function AccountButton({ big }: { big?: boolean }) {
 		return (
 			<button>
 				<span class="account-button-ssr-logged-in">
-					{big
-						? (
-							<>
-								<AtSign />
-								<span class="account-button-ssr-handle"></span>
-							</>
-						)
-						: <UserRound />}
+					{big ? (
+						<>
+							<AtSign />
+							<span class="account-button-ssr-handle"></span>
+						</>
+					) : (
+						<UserRound />
+					)}
 				</span>
 				<span class="account-button-ssr-logged-out">
 					<AtSign /> Log In
@@ -224,5 +242,5 @@ export function AccountButton({ big }: { big?: boolean }) {
 	}
 	const session = useSession();
 	if (session.did) return <Account big={big} />;
-	return <LogIn />;
+	return <PickerLogIn />;
 }
