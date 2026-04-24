@@ -1,21 +1,21 @@
 {
-  "name": "atpkgs",
-  "version": "0.0.4",
-  "description": "A decentralized package registry for JavaScript and TypeScript, built on @ATProtocol.",
-  "type": "module",
-  "scripts": {
-    "prepack": "node --run build",
-    "build": "esbuild --bundle --format=esm --outfile=dist/bin.js --platform=node bin.ts",
-    "dev": "node --run build && env ATPKGS_URL='http://127.0.0.1:5173' node dist/bin.js"
-  },
-  "license": "MIT",
-  "files": [
-    "dist/bin.js"
-  ],
-  "bin": {
-    "atpkgs": "dist/bin.js"
-  },
-  "atpkgs": {
-    "name": "@purl.org/atpkgs"
-  }
+	"name": "atpkgs",
+	"version": "0.0.6",
+	"description": "A decentralized package registry for JavaScript and TypeScript, built on @ATProtocol.",
+	"type": "module",
+	"scripts": {
+		"prepack": "node --run build",
+		"build": "esbuild --bundle --format=esm --outfile=dist/bin.js --platform=node bin.ts",
+		"dev": "node --run build && env ATPKGS_URL='http://127.0.0.1:5173' node dist/bin.js"
+	},
+	"license": "MIT",
+	"files": [
+		"dist/bin.js"
+	],
+	"bin": {
+		"atpkgs": "dist/bin.js"
+	},
+	"atpkgs": {
+		"name": "@purl.org/atpkgs"
+	}
 }
